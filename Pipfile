@@ -9,6 +9,7 @@ pillow = "*"
 psycopg2 = "*"
 django-environ = "*"
 django-configurations = "*"
+whitenoise = {extras = ["brotli"], version = "*"}
 
 [dev-packages]
 autopep8 = "*"
