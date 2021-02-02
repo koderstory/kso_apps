@@ -17,4 +17,5 @@ django-admin startproject \
     ProjectName
 cd ProjectName
 pipenv install --dev
+mv example.env .env
 ```
