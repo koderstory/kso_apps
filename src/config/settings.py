@@ -109,5 +109,5 @@ class Development(Configuration):
 
 
 class Production(Development):
-    ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+    ALLOWED_HOSTS = env.list('HOSTS')
     DEBUG = env('DEBUG')
