@@ -22,7 +22,7 @@ class Development(Configuration):
         DEFAULT_SITE_URL = SITE_URL_HTTPS
     else:
         DEFAULT_SITE_URL = SITE_URL_HTTP
-    ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+    ALLOWED_HOSTS = env.list('HOSTS')
     
     # ---------------------
     # Advance config
