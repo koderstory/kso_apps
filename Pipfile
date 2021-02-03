@@ -10,6 +10,7 @@ psycopg2 = "*"
 django-environ = "*"
 django-configurations = "*"
 whitenoise = {extras = ["brotli"], version = "*"}
+gunicorn = "*"
 
 [dev-packages]
 autopep8 = "*"
