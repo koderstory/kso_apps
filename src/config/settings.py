@@ -122,12 +122,12 @@ class Production(Development):
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER =('HTTP_X_FORWARDED_PROTO', 'https')
 
-    if env.bool('USE_S3):
+    if env.bool('USE_S3'):
         DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
         AWS_ACCESS_KEY_ID = env.str('AWS_KEY')
         AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET')
         AWS_STORAGE_BUCKET_NAME = env.str('AWS_STORAGE')
         AWS_S3_REGION_NAME = env.str('AWS_REGION')
-        AWS_S3_ENDPOINT_URL = env.str('AWS_ENDPOINT'
+        AWS_S3_ENDPOINT_URL = env.str('AWS_ENDPOINT')
 
 
