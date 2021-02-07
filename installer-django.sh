@@ -67,5 +67,5 @@ sudo systemctl reload nginx
 
 pipenv install --dev
 printf "\n\n✨ ✨ Installation is finished! ✨ ✨\n"
-rm dt
+rm ../dt
 
