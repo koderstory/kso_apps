@@ -1,8 +1,13 @@
 #!/bin/bash
 printf "\n==================\n SETUP\n==================\n"
-read -p "Using subdomain www? (y/N) " WWW
-read -p "Enter Domain?  (urdomain.com) " DOMAIN
-read -p "Debug mode? (y/N) " DEBUG
+read -p "1. Using subdomain www? (y/N) " WWW
+read -p "2. Enter Domain?  (urdomain.com) " DOMAIN
+while [ -z $DOMAIN ]; do
+    printf "\nDOMAIN CAN'T BE BLANK ❌\n"
+    read -p "2. Enter Domain?  (urdomain.com) " DOMAIN
+done
+
+read -p "3. Debug mode? (y/N) " DEBUG
 
 printf "\nProcessing ...\n\n"
 DIR=$(pwd)/$DOMAIN
@@ -61,6 +66,6 @@ sudo supervisorctl update
 sudo systemctl reload nginx
 
 pipenv install --dev
-rintf "\n\n\n\nInstallation is finished! \n"
+printf "\n\n\Installation is finished! \n"
 rm $0
 
