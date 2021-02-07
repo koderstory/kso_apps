@@ -1,5 +1,5 @@
 #!/bin/bash
-
+clear
 read -p "Using subdomain www? (y/N) " WWW
 read -p "Enter Domain?  (urdomain.com) " DOMAIN
 read -p "Debug mode? (y/N) " DEBUG
