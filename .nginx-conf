@@ -1,0 +1,26 @@
+upstream app_server {
+    server unix:/home/dev/urdomain.com/.gunicorn.sock fail_timeout=0;
+}
+
+server {
+    listen 80;
+    server_name www.urdomain.com urdomain.com;  # here can also be the IP address of the server
+
+    keepalive_timeout 5;
+    client_max_body_size 4G;
+
+    access_log /home/dev/urdomain.com/logs/nginx-access;
+    error_log /home/dev/urdomain.com/logs/nginx-error;
+
+    # checks for static file, if not found proxy to app
+    location / {
+        try_files $uri @proxy_to_app;
+    }
+
+    location @proxy_to_app {
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_redirect off;
+      proxy_pass http://app_server;
+    }
+}
