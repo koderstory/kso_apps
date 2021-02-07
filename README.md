@@ -15,7 +15,7 @@ This is a simple Django 3.x template project. Ready to deploy to VPS like [Upclo
 ## How to install
 
 ```bash
-curl -s -L https://bit.ly/36RMnfH -o dt && chmod u+x dt && ./dt
+curl -s -L http://bit.ly/djtemplate -o dt && chmod u+x dt && ./dt
 ```
 
 ![](installation.gif)
