@@ -38,9 +38,9 @@ if [ "$LOCAL_STORAGE" = "N" ]; then
     printf "\nS3 Setup:\n"    
     read -p "4-1. S3 storage access key ID? " S3_ID
     read -p "4-2. S3 storage secret access key? " S3_SECRET
-    read -p "4-3. S3 storage bucket name? " S3_BUCKET
-    read -p "4-4. S3 storage region? " S3_REGION
-    read -p "4-5. S3 storage endpoint? " S3_ENDPOINT
+    read -p "4-3. S3 storage bucket name? (letter, number, and dash allowed)" S3_BUCKET
+    read -p "4-4. S3 storage region? (example: sg-sin1) " S3_REGION
+    read -p "4-5. S3 storage endpoint? (url: https:// ...) " S3_ENDPOINT
 
     sed -i 's/MYS3/True/g' example.env
     sed -i "s~S3_ID~$S3_ID~g" example.env
