@@ -1,5 +1,4 @@
 #!/bin/bash
-clear
 read -p "Using subdomain www? (y/N) " WWW
 read -p "Enter Domain?  (urdomain.com) " DOMAIN
 read -p "Debug mode? (y/N) " DEBUG
@@ -13,7 +12,7 @@ NGINX_ACCESS=$DIR"/logs/nginx-access"
 NGINX_ERROR=$DIR"/logs/nginx-errors"
 
 mkdir $DIR && cd $DIR
-wget -c https://github.com/koderstory/djangotemplate/raw/main/djangotemplate.tar.gz && tar -xzf djangotemplate.tar.gz && rm djangotemplate.tar.gz
+wget -c -q https://github.com/koderstory/djangotemplate/raw/main/djangotemplate.tar.gz && tar -xzf djangotemplate.tar.gz && rm djangotemplate.tar.gz
 
 KEY=$(openssl rand -base64 30)
 sed -i "s~MYKEY~$KEY~g" example.env
@@ -47,7 +46,7 @@ else
     sed -i "s/WWWDOMAIN/www.$DOMAIN/g" nginx.conf
 fi
 
-mv nginx-conf $DOMAIN
+mv nginx.conf $DOMAIN
 mv supervisor.conf $DOMAIN".conf"
 mv example.env .env
 sudo mv $DOMAIN /etc/nginx/sites-available/
