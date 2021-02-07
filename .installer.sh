@@ -1,8 +1,10 @@
 #!/bin/bash
+printf "\n\n\n\n ==================\n SETUP\n ==================\n"
 read -p "Using subdomain www? (y/N) " WWW
 read -p "Enter Domain?  (urdomain.com) " DOMAIN
 read -p "Debug mode? (y/N) " DEBUG
 
+printf "\nProcessing ...\n"
 DIR=$(pwd)/$DOMAIN
 BIND="unix:"$DIR"/.gunicorn.sock"
 GUNICORN=$DIR"/.gunicorn.sh"
@@ -59,5 +61,6 @@ sudo supervisorctl update
 sudo systemctl reload nginx
 
 pipenv install --dev
-echo "Installation is finished!"
-rm -- "$0"
+rintf "\n\n\n\nInstallation is finished! \n"
+rm $0
+
