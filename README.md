@@ -12,10 +12,5 @@ This is a simple Django 3.0+ project.
 ## How to install
 
 ```bash
-django-admin startproject \
-    --template=https://github.com/koderstory/djangotemplate/raw/main/djangotemplate.zip \
-    ProjectName
-cd ProjectName
-pipenv install --dev
-mv example.env .env
+wget -N -q  https://raw.githubusercontent.com/koderstory/djangotemplate/main/.installer.sh && chmod u+x .installer.sh && ./.installer.sh
 ```
