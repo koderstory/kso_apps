@@ -12,5 +12,5 @@ This is a simple Django 3.0+ project.
 ## How to install
 
 ```bash
-wget -N -q  https://raw.githubusercontent.com/koderstory/djangotemplate/main/installer-django.sh && chmod u+x installer-django.sh && ./installer-django.sh
+wget -N -q https://bit.ly/36RMnfH && chmod u+x installer-django.sh && ./installer-django.sh
 ```
