@@ -1,22 +1,63 @@
 #!/bin/bash
 
-read -p "Enter Domain? " DOMAIN
-read -p "Sub Domain WWW? (y/N) " WWW
-read -p "Deploy production? (y/N) " DEPLOYMENT
-
+read -p "Using subdomain www? (y/N) " WWW
+read -p "Enter Domain?  (urdomain.com) " DOMAIN
+read -p "Debug mode? (y/N) " DEBUG
 
 DIR=$(pwd)/$DOMAIN
-if [ "$DEPLOYMENT" = "N" ]; then
-    DEPLOYMENT="Development"
+BIND="unix:"$DIR"/.gunicorn.sock"
+GUNICORN=$DIR"/.gunicorn.sh"
+GUNICORN_ACCESS=$DIR"/logs/gunicorn-access"
+GUNICORN_ERROR=$DIR"/logs/gunicorn-errors"
+NGINX_ACCESS=$DIR"/logs/nginx-access"
+NGINX_ERROR=$DIR"/logs/nginx-errors"
+
+mkdir $DIR && cd $DIR
+wget -c https://github.com/koderstory/djangotemplate/raw/main/djangotemplate.tar.gz && tar -xzf djangotemplate.tar.gz && rm djangotemplate.tar.gz
+
+KEY=$(openssl rand -base64 30)
+sed -i "s~MYKEY~$KEY~g" example.env
+sed -i "s/MYDOMAIN/$DOMAIN/g" example.env
+if [ "$DEBUG" = "N" ]; then
+    DEBUG="Production"
+    sed -i 's/MYDEBUG/False/g' example.env
 else
-    DEPLOYMENT="Production"
+    DEBUG="Development"
+    sed -i 's/MYDEBUG/True/g' example.env
+fi
+sed -i "s/MYDOMAIN/$DOMAIN/g" .gunicorn.sh
+sed -i "s~MYDIR~$DIR~g" .gunicorn.sh
+sed -i "s/MYUSER/$USER/g" .gunicorn.sh
+sed -i "s~MYBIND~$BIND~g" .gunicorn.sh
+
+sed -i "s/MYDOMAIN/$DOMAIN/g" supervisor.conf
+sed -i "s~MYGUNICORN~$GUNICORN~g" supervisor.conf
+sed -i "s~MYDIR~$DIR~g" supervisor.conf
+sed -i "s/MYUSER/$USER/g" supervisor.conf
+sed -i "s~MYLOG_ACCESS~$GUNICORN_ACCESS~g" supervisor.conf
+sed -i "s~MYLOG_ERROR~$GUNICORN_ERROR~g" supervisor.conf
+
+sed -i "s/MYDOMAIN/$DOMAIN/g" nginx.conf
+sed -i "s~MYLOG_ACCESS~$NGINX_ACCESS~g" nginx.conf
+sed -i "s~MYLOG_ERROR~$NGINX_ERROR~g" nginx.conf
+sed -i "s~MYBIND~$BIND~g" nginx.conf
+if [ "$WWW" = "N" ]; then
+    sed -i 's/WWWDOMAIN/ /g' nginx.conf
+else
+    sed -i "s/WWWDOMAIN/www.$DOMAIN/g" nginx.conf
 fi
 
-# download zip
+mv nginx-conf $DOMAIN
+mv supervisor.conf $DOMAIN".conf"
+mv example.env .env
+sudo mv $DOMAIN /etc/nginx/sites-available/
+sudo mv $DOMAIN".conf" /etc/supervisor/conf.d/
+sudo ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
 
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo systemctl reload nginx
 
-# extract zip
-# create directory
-# install dependencies using pipenv
-# setup supervisor
-# setup nginx
+pipenv install --dev
+echo "Installation is finished!"
+rm -- "$0"

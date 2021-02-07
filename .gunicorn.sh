@@ -1,11 +1,11 @@
 #!/bin/bash
 
-NAME="urdomain.com"
-DIR=/home/dev/urdomain.com
-USER=dev
-GROUP=dev
+NAME=MYDOMAIN
+DIR=MYDIR
+USER=MYUSER
+GROUP=MYUSER
 WORKERS=3
-BIND=0.0.0.0:8080
+BIND=MYBIND
 
 cd $DIR
 source .venv/bin/activate
