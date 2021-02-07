@@ -18,6 +18,8 @@ This is a simple Django 3.x template project. Ready to deploy to VPS like [Upclo
 curl -s -L https://bit.ly/36RMnfH -o dt && chmod u+x dt && ./dt
 ```
 
+![](installation.gif)
+
 ## Configuration
 
 By default setting is in production ready mode. In case you need to change or custom it then edit `.env` file,`settings.py` or `.gunicorn.sh.
