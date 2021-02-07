@@ -23,6 +23,7 @@ curl -s -L https://bit.ly/36RMnfH -o dt && chmod u+x dt && ./dt
 By default setting is in production ready mode. In case you need to change or custom it then edit `.env` file,`settings.py` or `.gunicorn.sh.
 
 **.env**
+```bash
 # ==============
 # GLOBAL
 # ==============
