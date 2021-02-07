@@ -25,6 +25,7 @@ if [ "$LOCAL_STORAGE" = "N" ]; then
     sed -i "s~S3_ENDPOINT~$S3_ENDPOINT~g" example.env
 else
     sed -i 's/MYS3/False/g' example.env
+fi
 
 
 printf "\nProcessing ...\n\n"
