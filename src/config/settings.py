@@ -13,7 +13,7 @@ class Development(Configuration):
     # Host
     # ---------------------
     SECRET_KEY = env('SECRET_KEY')
-    DEBUG = env('DEBUG')
+    DEBUG = env.bool('DEBUG')
     SITE_HOST = env.str('SITE_HOST')
     SITE_URL_HTTP = 'http://{}'.format(SITE_HOST)
     SITE_URL_HTTPS = 'https://{}'.format(SITE_HOST)
@@ -22,7 +22,7 @@ class Development(Configuration):
         DEFAULT_SITE_URL = SITE_URL_HTTPS
     else:
         DEFAULT_SITE_URL = SITE_URL_HTTP
-    ALLOWED_HOSTS = env.list('HOSTS')
+    ALLOWED_HOSTS = ['127.0.0.1', '0.0.0.0', 'localhost',]
     
     # ---------------------
     # Advance config
@@ -110,4 +110,24 @@ class Development(Configuration):
 
 class Production(Development):
     ALLOWED_HOSTS = env.list('HOSTS')
-    DEBUG = env('DEBUG')
+    DEBUG = env.bool('DEBUG')
+    
+    SESSION_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_REDIRECT_EXEMPT = []
+    SECURE_SSL_HOST = None
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER =('HTTP_X_FORWARDED_PROTO', 'https')
+
+    if env.bool('USE_S3):
+        DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+        AWS_ACCESS_KEY_ID = env.str('AWS_KEY')
+        AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET')
+        AWS_STORAGE_BUCKET_NAME = env.str('AWS_STORAGE')
+        AWS_S3_REGION_NAME = env.str('AWS_REGION')
+        AWS_S3_ENDPOINT_URL = env.str('AWS_ENDPOINT'
+
+

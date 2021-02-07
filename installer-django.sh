@@ -7,7 +7,25 @@ while [ -z $DOMAIN ]; do
     read -p "2. Enter Domain?  (urdomain.com) " DOMAIN
 done
 
-read -p "3. Debug mode? (y/N) " DEBUG
+read -p "3. Production Setting? (y/N) " DEBUG
+read -p "4. Use local storage?  (y/N) " LOCAL_STORAGE
+if [ "$LOCAL_STORAGE" = "N" ]; then
+    printf "\nS3 Setup:\n"    
+    read -p "4-1. S3 storage access key ID?" S3_ID
+    read -p "4-2. S3 storage secret access key?" S3_SECRET
+    read -p "4-3. S3 storage bucket name?" S3_BUCKET
+    read -p "4-4. S3 storage region?" S3_REGION
+    read -p "4-5. S3 storage endpoint?" S3_ENDPOINT
+
+    sed -i 's/MYS3/True/g' example.env
+    sed -i "s~S3_ID~$S3_ID~g" example.env
+    sed -i "s~S3_SECRET~$S3_SECRET~g" example.env
+    sed -i "s~S3_BUCKET~$S3_BUCKET~g" example.env
+    sed -i "s~S3_REGION~$S3_REGION~g" example.env
+    sed -i "s~S3_ENDPOINT~$S3_ENDPOINT~g" example.env
+else
+    sed -i 's/MYS3/False/g' example.env
+
 
 printf "\nProcessing ...\n\n"
 DIR=$(pwd)/$DOMAIN
@@ -25,16 +43,18 @@ KEY=$(openssl rand -base64 30)
 sed -i "s~MYKEY~$KEY~g" example.env
 sed -i "s/MYDOMAIN/$DOMAIN/g" example.env
 if [ "$DEBUG" = "N" ]; then
-    DEBUG="Production"
-    sed -i 's/MYDEBUG/False/g' example.env
-else
     DEBUG="Development"
     sed -i 's/MYDEBUG/True/g' example.env
+else
+    DEBUG="Production"
+    sed -i 's/MYDEBUG/False/g' example.env
+    
 fi
 sed -i "s/MYDOMAIN/$DOMAIN/g" .gunicorn.sh
 sed -i "s~MYDIR~$DIR~g" .gunicorn.sh
 sed -i "s/MYUSER/$USER/g" .gunicorn.sh
 sed -i "s~MYBIND~$BIND~g" .gunicorn.sh
+sed -i "s/MYDEBUG/$DEBUG/g" .gunicorn.sh
 
 sed -i "s/MYDOMAIN/$DOMAIN/g" supervisor.conf
 sed -i "s~MYGUNICORN~$GUNICORN~g" supervisor.conf

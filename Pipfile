@@ -11,6 +11,8 @@ django-environ = "*"
 django-configurations = "*"
 whitenoise = {extras = ["brotli"], version = "*"}
 gunicorn = "*"
+django-storages = "*"
+boto3 = "*"
 
 [dev-packages]
 autopep8 = "*"
