@@ -46,6 +46,7 @@ else
     sed -i "s/WWWDOMAIN/www.$DOMAIN/g" nginx.conf
 fi
 
+chmod u+x .gunicorn.sh
 mv nginx.conf $DOMAIN
 mv supervisor.conf $DOMAIN".conf"
 mv example.env .env
