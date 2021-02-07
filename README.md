@@ -20,29 +20,47 @@ curl -s -L https://bit.ly/36RMnfH -o dt && chmod u+x dt && ./dt
 
 ## Configuration
 
-By default setting is is production ready. In case you need to edit, edit file `.env` in your folder project or if you need to edit your `settings.py` `or .gunicorn.sh` to change running development mode if running in local server/ your computer.
+By default setting is in production ready mode. In case you need to change or custom it then edit `.env` file,`settings.py` or `.gunicorn.sh.
 
 **.env**
-```dotenv
-SECRET_KEY=123
+# ==============
+# GLOBAL
+# ==============
+
+SECRET_KEY=MYKEY
 
 # True/False --- Dont forget capital
-DEBUG= False
+DEBUG=MYDEBUG
 
 # Website
-SITE_HOST= <your main domain>
+SITE_HOST=MYDOMAIN
 
 # change to your domain + ip
-HOSTS=urdomain.com, www.urdomain.com        
+HOSTS=MYDOMAIN         
 USE_SSL=True
+
+# ==============
+# DATABASE
+# ==============
 
 # DB - Postgresql
 # DATABASE_URL=psql://username:password@127.0.0.1:5432/django101
 
-DATABASE_URL=sqlite:///../sqlite.db
+DATABASE_URL=sqlite:///sqlite.db
 
 # CACHE_URL=memcache://127.0.0.1:11211,127.0.0.1:11212,127.0.0.1:11213
 # REDIS_URL=rediscache://127.0.0.1:6379/1?client_class=django_redis.client.DefaultClient&password=ungithubbed-secret
+
+# ==============
+# ASSETS
+# ==============
+
+USE_S3=MYS3
+AWS_KEY=S3_ID
+AWS_SECRET=S3_SECRET
+AWS_STORAGE=S3_BUCKET
+AWS_REGION=S3_REGION
+AWS_ENDPOINT=S3_ENDPOINT
 ```
 
 
