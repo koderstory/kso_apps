@@ -9,24 +9,6 @@ done
 
 read -p "3. Production Setting? (y/N) " DEBUG
 read -p "4. Use local storage?  (y/N) " LOCAL_STORAGE
-if [ "$LOCAL_STORAGE" = "N" ]; then
-    printf "\nS3 Setup:\n"    
-    read -p "4-1. S3 storage access key ID?" S3_ID
-    read -p "4-2. S3 storage secret access key?" S3_SECRET
-    read -p "4-3. S3 storage bucket name?" S3_BUCKET
-    read -p "4-4. S3 storage region?" S3_REGION
-    read -p "4-5. S3 storage endpoint?" S3_ENDPOINT
-
-    sed -i 's/MYS3/True/g' example.env
-    sed -i "s~S3_ID~$S3_ID~g" example.env
-    sed -i "s~S3_SECRET~$S3_SECRET~g" example.env
-    sed -i "s~S3_BUCKET~$S3_BUCKET~g" example.env
-    sed -i "s~S3_REGION~$S3_REGION~g" example.env
-    sed -i "s~S3_ENDPOINT~$S3_ENDPOINT~g" example.env
-else
-    sed -i 's/MYS3/False/g' example.env
-fi
-
 
 printf "\nProcessing ...\n\n"
 DIR=$(pwd)/$DOMAIN
@@ -51,6 +33,27 @@ else
     sed -i 's/MYDEBUG/False/g' example.env
     
 fi
+
+if [ "$LOCAL_STORAGE" = "N" ]; then
+    printf "\nS3 Setup:\n"    
+    read -p "4-1. S3 storage access key ID? " S3_ID
+    read -p "4-2. S3 storage secret access key? " S3_SECRET
+    read -p "4-3. S3 storage bucket name? (letter, number, and dash allowed)" S3_BUCKET
+    read -p "4-4. S3 storage region? (example: sg-sin1) " S3_REGION
+    read -p "4-5. S3 storage endpoint? (url: https:// ...) " S3_ENDPOINT
+
+    sed -i 's/MYS3/True/g' example.env
+    sed -i "s~S3_ID~$S3_ID~g" example.env
+    sed -i "s~S3_SECRET~$S3_SECRET~g" example.env
+    sed -i "s~S3_BUCKET~$S3_BUCKET~g" example.env
+    sed -i "s~S3_REGION~$S3_REGION~g" example.env
+    sed -i "s~S3_ENDPOINT~$S3_ENDPOINT~g" example.env
+    printf "\nProcessing ...\n\\n\n"
+else
+    sed -i 's/MYS3/False/g' example.env
+fi
+
+
 sed -i "s/MYDOMAIN/$DOMAIN/g" .gunicorn.sh
 sed -i "s~MYDIR~$DIR~g" .gunicorn.sh
 sed -i "s/MYUSER/$USER/g" .gunicorn.sh
