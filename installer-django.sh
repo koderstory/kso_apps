@@ -66,6 +66,6 @@ sudo supervisorctl update
 sudo systemctl reload nginx
 
 pipenv install --dev
-printf "\n\n\Installation is finished! \n"
-rm $0
+printf "\n\n✨ ✨ Installation is finished! ✨ ✨\n"
+rm dt
 
