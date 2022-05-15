@@ -107,4 +107,4 @@ media/
 *.db
 *.pid
 
-files/
+public/
