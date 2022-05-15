@@ -9,6 +9,7 @@ django-environ = "*"
 psycopg2 = "*"
 gunicorn = "*"
 pillow = "*"
+whitenoise = {extras = ["brotli"], version = "*"}
 
 [dev-packages]
 
