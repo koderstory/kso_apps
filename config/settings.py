@@ -1,23 +1,32 @@
 from pathlib import Path
+import environ
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ---------------------
+# Environment
+# ---------------------
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-q%b6+bp1)vc^-p&*!o+ml@6^ths=1+f5e!##r^9q!*+o%59ix3'
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG')
 
-ALLOWED_HOSTS = []
+# DOMAINS or HOSTS
+ALLOWED_HOSTS = env.list('HOSTS')
 
-
+# ---------------------
 # Application definition
-
+# ---------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -29,6 +38,9 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
 ]
 
+# ---------------------
+# MIDDLEWARE
+# ---------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -41,10 +53,15 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+# ---------------------
+# Templates
+# ---------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -59,21 +76,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
+# ---------------------
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
+# ---------------------
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default':env.db()
 }
 
-
+# ---------------------
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
-
+# ---------------------
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -102,12 +116,19 @@ USE_I18N = True
 USE_TZ = True
 
 
+# ---------------------
+# Assets
+# ---------------------
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "resources", ]
+STATIC_ROOT = BASE_DIR / 'public/static'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'public/media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
