@@ -5,17 +5,8 @@ name = "pypi"
 
 [packages]
 django = "*"
-pillow = "*"
-psycopg2 = "*"
-django-environ = "*"
-django-configurations = "*"
-whitenoise = {extras = ["brotli"], version = "*"}
-gunicorn = "*"
-django-storages = "*"
-boto3 = "*"
 
 [dev-packages]
-autopep8 = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
