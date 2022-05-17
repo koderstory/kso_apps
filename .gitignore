@@ -108,3 +108,5 @@ media/
 *.pid
 
 public/
+
+node_modules/
