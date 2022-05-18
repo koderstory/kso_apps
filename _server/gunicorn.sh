@@ -1,5 +1,3 @@
-#!/bin/bash
-
 NAME=MYDOMAIN
 DIR=MYDIR
 USER=MYUSER
@@ -9,10 +7,8 @@ BIND=MYBIND
 
 cd $DIR
 source .venv/bin/activate
-cd src
 
-
-exec ../.venv/bin/gunicorn config.wsgi \
+exec .venv/bin/gunicorn config.wsgi \
         --env DJANGO_SETTINGS_MODULE=config.settings \
         --env DJANGO_CONFIGURATION=MYDEBUG \
         --bind $BIND \
