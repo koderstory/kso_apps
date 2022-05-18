@@ -8,10 +8,10 @@ read -p "2. Enter Domain?  (urdomain.com) " DOMAIN
 DIR=$(pwd)
 BIND="unix:"$DIR"/.server/.gunicorn.sock"
 GUNICORN=$DIR"/.server/.gunicorn.sh"
-GUNICORN_ACCESS=$DIR"/logs/gunicorn-access.log"
-GUNICORN_ERROR=$DIR"/logs/gunicorn-errors.log"
-NGINX_ACCESS=$DIR"/logs/nginx-access.log"
-NGINX_ERROR=$DIR"/logs/nginx-errors.log"
+GUNICORN_ACCESS=$DIR"/.logs/gunicorn-access.log"
+GUNICORN_ERROR=$DIR"/.logs/gunicorn-errors.log"
+NGINX_ACCESS=$DIR"/.logs/nginx-access.log"
+NGINX_ERROR=$DIR"/.logs/nginx-errors.log"
 
 cd $DIR
 
