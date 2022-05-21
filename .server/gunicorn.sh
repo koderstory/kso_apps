@@ -1,3 +1,5 @@
+#!/bin/sh
+
 NAME=MYDOMAIN
 DIR=MYDIR
 USER=MYUSER
