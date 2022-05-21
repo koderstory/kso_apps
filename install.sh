@@ -1,8 +1,14 @@
 #!/bin/bash
 
 # read data
-read -p "1. Using subdomain www? (Y/n) " WWW
-read -p "2. Enter Domain?  (urdomain.com) " DOMAIN
+printf "🔆🔆🔆  SETUP DJANGO PROJECT 🔆🔆🔆\n"
+printf "===================================\n"
+read -p "✅ 1. Using subdomain www? (Y/n) " WWW
+read -p "✅ 2. Enter Domain?  (urdomain.com) " DOMAIN
+while [ -z $DOMAIN ]; do
+    printf "\n‼️ DOMAIN CAN'T BE BLANK ❌\n"
+    read -p "✅ 2. Enter Domain?  (urdomain.com) " DOMAIN
+done
 
 # set variables
 DIR=$(pwd)
