@@ -12,9 +12,4 @@ This is a simple Django template project. Ready to deploy to VPS.
 
 ## How to install
 
-- Clone this repo
-- Make sure you install pipenv
-- Create directory .venv in your project folder
-- run `pipenv install --ignore-pipfile`
-- run install.sh
-- Config your .env file
+- Download file `get "https://github.com/aldyahsn/djangotemplate/archive/refs/tags/v22.1.zip" -O template.zip`
