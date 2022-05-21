@@ -6,14 +6,19 @@ read -p "2. Enter Domain?  (urdomain.com) " DOMAIN
 
 # set variables
 DIR=$(pwd)
-BIND="unix:"$DIR"/.server/.gunicorn.sock"
-GUNICORN=$DIR"/.server/.gunicorn.sh"
+BIND="unix:"$DIR"/.server/gunicorn.sock"
+GUNICORN=$DIR"/.server/gunicorn.sh"
 GUNICORN_ACCESS=$DIR"/.logs/gunicorn-access.log"
 GUNICORN_ERROR=$DIR"/.logs/gunicorn-errors.log"
 NGINX_ACCESS=$DIR"/.logs/nginx-access.log"
 NGINX_ERROR=$DIR"/.logs/nginx-errors.log"
 
 cd $DIR
+rm -rf .venv 
+mkdir .venv
+
+pip3 install pipenv
+pipenv install
 
 [ -f .server/gunicorn.sh ] && sed -i "s/MYDOMAIN/$DOMAIN/g" .server/gunicorn.sh
 [ -f .server/gunicorn.sh ] && sed -i "s~MYDIR~$DIR~g" .server/gunicorn.sh
@@ -41,13 +46,13 @@ else
 fi
 
 chmod u+x .server/gunicorn.sh
-cp server/nginx.conf $DOMAIN"_nginx.conf"
+cp .server/nginx.conf $DOMAIN"_nginx.conf"
 cp .server/supervisor.conf $DOMAIN".conf"
 cp example.env .env
 
-sudo cp -i $DOMAIN"_nginx.conf" /etc/nginx/sites-available/
-sudo cp -i $DOMAIN".conf" /etc/supervisor/conf.d/
-sudo ln -s /etc/nginx/sites-available/$DOMAIN"_nginx.conf" /etc/nginx/sites-enabled/
+sudo cp $DOMAIN"_nginx.conf" /etc/nginx/sites-available/
+sudo cp $DOMAIN".conf" /etc/supervisor/conf.d/
+sudo ln -sfn /etc/nginx/sites-available/$DOMAIN"_nginx.conf" /etc/nginx/sites-enabled/
 sudo supervisorctl reread
 sudo supervisorctl update
 sudo systemctl reload nginx
