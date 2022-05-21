@@ -14,8 +14,8 @@ done
 DIR=$(pwd)
 BIND="unix:"$DIR"/.server/gunicorn.sock"
 GUNICORN=$DIR"/.server/gunicorn.sh"
-GUNICORN_ACCESS=$DIR"/.logs/gunicorn-access.log"
-GUNICORN_ERROR=$DIR"/.logs/gunicorn-errors.log"
+GUNICORN_ACCESS=$DIR"/logs/gunicorn-access.log"
+GUNICORN_ERROR=$DIR"/logs/gunicorn-errors.log"
 NGINX_ACCESS=$DIR"/.logs/nginx-access.log"
 NGINX_ERROR=$DIR"/.logs/nginx-errors.log"
 
@@ -52,16 +52,17 @@ else
 fi
 
 chmod u+x .server/gunicorn.sh
-cp .server/nginx.conf $DOMAIN"_nginx.conf"
-cp .server/supervisor.conf $DOMAIN".conf"
+cp .server/nginx.conf ".server/"$DOMAIN"_nginx.conf"
+cp .server/supervisor.conf ".server/"$DOMAIN".conf"
 cp example.env .env
 
-sudo cp $DOMAIN"_nginx.conf" /etc/nginx/sites-available/
-sudo cp $DOMAIN".conf" /etc/supervisor/conf.d/
+sudo cp ".server/"$DOMAIN"_nginx.conf" /etc/nginx/sites-available/
+sudo cp ".server/"$DOMAIN".conf" /etc/supervisor/conf.d/
 sudo ln -sfn /etc/nginx/sites-available/$DOMAIN"_nginx.conf" /etc/nginx/sites-enabled/
 sudo supervisorctl reread
 sudo supervisorctl update
 sudo systemctl reload nginx
+
 
 
 
