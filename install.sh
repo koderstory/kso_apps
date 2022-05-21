@@ -45,7 +45,7 @@ mv .server/nginx.conf $DOMAIN"_nginx.conf"
 mv .server/supervisor.conf $DOMAIN".conf"
 mv example.env .env
 
-sudo mv -i $DOMAIN /etc/nginx/sites-available/
+sudo mv -i $DOMAIN"_nginx.conf" /etc/nginx/sites-available/
 sudo mv -i $DOMAIN".conf" /etc/supervisor/conf.d/
 sudo ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/
 sudo supervisorctl reread
