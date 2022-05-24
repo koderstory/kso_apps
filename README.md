@@ -12,4 +12,4 @@ This is a simple Django template project. Ready to deploy to VPS.
 
 ## How to install
 
-- Download new [release](https://github.com/aldyahsn/djangotemplate/releases) or download through command `wget "https://github.com/aldyahsn/djangotemplate/archive/refs/tags/v22.1.zip" -O template.zip`
+- Download new [release](https://github.com/aldyahsn/djangotemplate/releases) or download through command `wget "https://github.com/aldyahsn/djangotemplate/archive/refs/tags/v22.2.zip" -O template.zip`
