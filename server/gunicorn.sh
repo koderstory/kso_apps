@@ -12,7 +12,6 @@ source .venv/bin/activate
 
 exec .venv/bin/gunicorn config.wsgi \
         --env DJANGO_SETTINGS_MODULE=config.settings \
-        --env DJANGO_CONFIGURATION=MYDEBUG \
         --bind $BIND \
         --workers $WORKERS \
         --name $NAME \
