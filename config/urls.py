@@ -20,8 +20,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name="home.html")),
-    # path('', TemplateView.as_view(template_name="blog.html")),
-    # path('', TemplateView.as_view(template_name="blog-detail.html")),
-    # path('', TemplateView.as_view(template_name="about.html")),
-    # path('', TemplateView.as_view(template_name="home.html")),
+    path('blog/', TemplateView.as_view(template_name="blog-list.html"), name="blog-list"),
+    path('blog/post/', TemplateView.as_view(template_name="post.html"), name="post"),
+    path('about/', TemplateView.as_view(template_name="about.html"), name="about"),
 ]
