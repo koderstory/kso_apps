@@ -43,11 +43,12 @@ INSTALLED_APPS = [
 # ------------------------
 # SSL
 # -----------------------
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True
-CSRF_TRUSTED_ORIGINS = ['https://'+ALLOWED_HOSTS[0]]
-CSRF_COOKIE_DOMAIN = ['https://'+ALLOWED_HOSTS[0]]
-CSRF_COOKIE_SECURE = True
+if DEBUG == False:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = False
+    CSRF_TRUSTED_ORIGINS = ['https://'+ALLOWED_HOSTS[0]]
+    CSRF_COOKIE_DOMAIN = ['https://'+ALLOWED_HOSTS[0]]
+    CSRF_COOKIE_SECURE = True
 
 
 # ---------------------

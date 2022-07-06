@@ -10,6 +10,7 @@ psycopg2 = "*"
 gunicorn = "*"
 pillow = "*"
 whitenoise = {extras = ["brotli"], version = "*"}
+djlint = "*"
 
 [dev-packages]
 

@@ -1,98 +1,16 @@
 {% load static %}
-
 <!doctype html>
-<html lang="en">
-
 <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <title>Bootstrap demo</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    
-    <title>Title</title>
 </head>
-
 <body>
-
-    <div class="container my-5">
-        <div class="text-center display-2 text-primary">Typography</div>
-        <!-- Typography -->
-        <h1>h1. Bootstrap heading</h1>
-        <h2>h2. Bootstrap heading</h2>
-        <h3>h3. Bootstrap heading</h3>
-        <h4>h4. Bootstrap heading</h4>
-        <h5>h5. Bootstrap heading</h5>
-        <h6>h6. Bootstrap heading</h6>
-        <br><br>
-        <h1 class="display-1">Display 1</h1>
-        <h1 class="display-2">Display 2</h1>
-        <h1 class="display-3">Display 3</h1>
-        <h1 class="display-4">Display 4</h1>
-        <h1 class="display-5">Display 5</h1>
-        <h1 class="display-6">Display 6</h1>
-
-        <p class="lead">
-            This is a lead paragraph. It stands out from regular paragraphs.
-        </p>
-        <p>
-            This is just ordinary paragraph
-        </p>
-
-        <p></p>
-    </div>
-
-
-    <!-- Buttons -->
-    <div class="container my-5">
-        <div class="text-center display-2 text-primary">Buttons</div>
-        <div class="row">
-            <div class="col p-3">
-                <a class="btn-primary btn w-100" href="#!">primary</a>
-            </div>
-            <div class="col p-3">
-                <a class="btn-secondary btn w-100" href="#!">secondary</a>
-            </div>
-            <div class="col p-3">
-                <a class="btn-success btn w-100" href="#!">success</a>
-            </div>
-            <div class="col p-3">
-                <a class="btn-info btn w-100" href="#!">info</a>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col p-3">
-                <a class="btn-warning btn w-100" href="#!">warning</a>
-            </div>
-            <div class="col p-3">
-                <a class="btn-danger btn w-100" href="#!">danger</a>
-            </div>
-            <div class="col p-3">
-                <a class="btn-light btn w-100" href="#!">light</a>
-            </div>
-            <div class="col p-3">
-                <a class="btn-dark btn w-100" href="#!">dark</a>
-            </div>
-        </div>
-    </div>
-
-
-
-
-
-    <!-- Optional JavaScript; choose one of the two! -->
-
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
-        crossorigin="anonymous"></script>
-
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
-    -->
+    {% include "include/navbar.html" %}
+    {% block main %}
+    {% endblock main %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
 </body>
-
 </html>
