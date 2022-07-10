@@ -39,6 +39,7 @@ INSTALLED_APPS = [
 
     'core.apps.CoreConfig',
     'authentication.apps.AuthenticationConfig',
+    'website.apps.WebsiteConfig',
 ]
 
 # ------------------------
