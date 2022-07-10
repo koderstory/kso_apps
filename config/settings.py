@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'core.apps.CoreConfig',
+    'authentication.apps.AuthenticationConfig',
 ]
 
 # ------------------------
@@ -149,3 +150,7 @@ MEDIA_ROOT = BASE_DIR / 'public/media'
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ------------
+# USER
+AUTH_USER_MODEL = 'authentication.Account'
