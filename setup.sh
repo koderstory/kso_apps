@@ -31,7 +31,6 @@ WantedBy=sockets.target
 "| sudo tee /etc/systemd/system/gunicorn_$DOMAIN.socket >> $HOMEDIR/deploy.log
 
 # -----------------------------------------
-sudo rm -r /etc/systemd/system/gunicorn_$DOMAIN.service >> /dev/null
 echo "[Unit]
 Description=gunicorn $DOMAIN daemon
 Requires=gunicorn_$DOMAIN.socket
@@ -58,8 +57,6 @@ curl --unix-socket /run/gunicorn_$DOMAIN.sock localhost >> $HOMEDIR/deploy.log
 sudo systemctl daemon-reload
 
 # -------------------------------------------------------------
-sudo rm -f /etc/nginx/sites-available/$DOMAIN >> /dev/null
-sudo rm -f /etc/nginx/sites-enabled/$DOMAIN >> /dev/null
 echo "server {
     listen 80;
     server_name $DOMAIN www.$DOMAIN;
