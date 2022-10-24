@@ -20,6 +20,32 @@ source "$HOMEDIR/.venv/bin/activate"
 django-admin startproject config .
 
 # --------------------------------------------------------------
+touch $HOMEDIR/.env
+echo "
+#-- KEY
+SECRET_KEY=$DBPASS
+
+#-- DEBUG STATUS
+DEBUG=True
+
+#-- HOST
+HOSTS=127.0.0.1,0.0.0.0,localhost,$DOMAIN,www.$DOMAIN
+
+#-- POSTGRESQL CONFIG
+#DATABASE_URL=psql://yourusername:yourpassword@127.0.0.1:5432/yourdatabase
+
+#-- SQLITE CONFIG
+DATABASE_URL=sqlite:///sqlite.db
+
+#-- MEMCACHE CONFIG
+# CACHE_URL=memcache://127.0.0.1:11211,127.0.0.1:11212,127.0.0.1:11213
+
+#-- REDIS CONFIG
+# REDIS_URL=rediscache://127.0.0.1:6379/1?client_class=django_redis.client.DefaultClient&password=ungithubbed-secret
+" | tee $HOMEDIR/.env >> $HOMEDIR/deploy.log
+
+
+# --------------------------------------------------------------
 echo "[Unit]
 Description=gunicorn socket -> $DOMAIN
 
