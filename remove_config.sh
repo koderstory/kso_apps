@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sudo rm -r /home/$USER/websites/$1
 sudo systemctl stop gunicorn_$1.service
 sudo systemctl disable gunicorn_$1.service
 

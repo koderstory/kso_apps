@@ -17,8 +17,6 @@ mkdir -p "$HOMEDIR/.venv"
 cd $HOMEDIR
 
 # ==============================================================
-printf "\n\n${GREEN}Installing django ...${WHITE}\n\n"
-# ==============================================================
 
 sudo -H pip install -U pipenv
 
@@ -28,8 +26,7 @@ django-admin startproject config
 mv $HOMEDIR/config $HOMEDIR/src
 
 # ==============================================================
-printf "\n\n${GREEN}✅ Django Installed\n"
-printf "\nCreating .env file ...${WHITE}\n\n"
+printf "\n${GREEN}✅ Django Installed ${WHITE}"
 # ==============================================================
 
 
@@ -59,8 +56,7 @@ DATABASE_URL=sqlite:///sqlite.db
 
 
 # ==============================================================
-printf "\n\n${GREEN}✅ .env file created\n"
-printf "\nCustomize Django settings ...${WHITE}\n\n"
+printf "\n${GREEN}✅ .env file created ${WHITE}"
 # ==============================================================
 
 echo "
@@ -156,7 +152,6 @@ MEDIA_ROOT = BASE_DIR.parent / 'public/upload'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 " | tee $HOMEDIR/src/config/settings.py >> deploy.log
-comment
 
 echo "
 from django.contrib import admin
@@ -177,8 +172,7 @@ if settings.DEBUG == True:
 
 
 # ==============================================================
-printf "\n\n${GREEN}✅ Settings.py is configured\n"
-printf "\nSetting systemd config ...${WHITE}\n\n"
+printf "\n${GREEN}✅ Settings.py is configured ${WHITE}\n"
 # ==============================================================
 
 echo "[Unit]
@@ -219,8 +213,7 @@ curl --unix-socket /run/gunicorn_$DOMAIN.sock localhost >> $HOMEDIR/deploy.log
 sudo systemctl daemon-reload
 
 # ==============================================================
-printf "\n\n${GREEN}✅ systemd is done\n"
-printf "\nSetting nginx ...${WHITE}\n\n"
+printf "\n${GREEN}✅ systemd is done ${WHITE}"
 # ==============================================================
 
 echo "server {
