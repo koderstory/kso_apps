@@ -2,18 +2,24 @@
 
 # Generate passowrds
 DBPASS=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12`
-#SFTPPASS=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12`
+GREEN='\033[1;36m'
+WHITE='\033[1;37m'
+# ==============================================================
+printf "🔆🔆🔆  SETUP DJANGO PROJECT 🔆🔆🔆\n"
+printf "===================================\n"
+# ==============================================================
 
-# Input domain name
 echo -ne "Enter your domain name:"
 read DOMAIN
 
-HOMEDIR="/home/${USER}/websites"
-#HOMEDIR="$(pwd)/websites/$DOMAIN"
+HOMEDIR="/home/${USER}/websites/${DOMAIN}"
 mkdir -p "$HOMEDIR/.venv"
 cd $HOMEDIR
 
-# -------------------------------------------------------------
+# ==============================================================
+printf "\n\n${GREEN}Installing django ...${WHITE}\n\n"
+# ==============================================================
+
 sudo -H pip install -U pipenv
 
 pipenv install django gunicorn django-environ psycopg2 pillow whitenoise djlint
@@ -21,7 +27,12 @@ source "$HOMEDIR/.venv/bin/activate"
 django-admin startproject config
 mv $HOMEDIR/config $HOMEDIR/src
 
-# --------------------------------------------------------------
+# ==============================================================
+printf "\n\n${GREEN}✅ Django Installed\n"
+printf "\nCreating .env file ...${WHITE}\n\n"
+# ==============================================================
+
+
 touch $HOMEDIR/.env
 echo "
 #-- KEY
@@ -47,7 +58,10 @@ DATABASE_URL=sqlite:///sqlite.db
 " | tee $HOMEDIR/.env >> $HOMEDIR/deploy.log
 
 
-# --------------------------------------------------------------
+# ==============================================================
+printf "\n\n${GREEN}✅ .env file created\n"
+printf "\nCustomize Django settings ...${WHITE}\n\n"
+# ==============================================================
 
 echo "
 from pathlib import Path
@@ -133,7 +147,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR.parent / 'assets', ]
 STATIC_ROOT = BASE_DIR.parent / 'public/static'
 #STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage' # Compress + Caching
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage' # Compress Only
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage' # Compress Only
 
 MEDIA_URL = '/upload/'
 MEDIA_ROOT = BASE_DIR.parent / 'public/upload'
@@ -162,8 +176,11 @@ if settings.DEBUG == True:
 " | tee $HOMEDIR/src/config/urls.py >> deploy.log
 
 
+# ==============================================================
+printf "\n\n${GREEN}✅ Settings.py is configured\n"
+printf "\nSetting systemd config ...${WHITE}\n\n"
+# ==============================================================
 
-# --------------------------------------------------------------
 echo "[Unit]
 Description=gunicorn socket -> $DOMAIN
 
@@ -174,7 +191,8 @@ ListenStream=/run/gunicorn_$DOMAIN.sock
 WantedBy=sockets.target
 "| sudo tee /etc/systemd/system/gunicorn_$DOMAIN.socket >> $HOMEDIR/deploy.log
 
-# -----------------------------------------
+# ==============================================================
+
 echo "[Unit]
 Description=gunicorn $DOMAIN daemon
 Requires=gunicorn_$DOMAIN.socket
@@ -195,13 +213,16 @@ ExecStart=$HOMEDIR/.venv/bin/gunicorn \
 WantedBy=multi-user.target
 " | sudo tee /etc/systemd/system/gunicorn_$DOMAIN.service >> $HOMEDIR/deploy.log
 
-# -----------------------------------------------------
 sudo systemctl start gunicorn_$DOMAIN.socket
 sudo systemctl enable gunicorn_$DOMAIN.socket
 curl --unix-socket /run/gunicorn_$DOMAIN.sock localhost >> $HOMEDIR/deploy.log
 sudo systemctl daemon-reload
 
-# -------------------------------------------------------------
+# ==============================================================
+printf "\n\n${GREEN}✅ systemd is done\n"
+printf "\nSetting nginx ...${WHITE}\n\n"
+# ==============================================================
+
 echo "server {
     listen 80;
     server_name $DOMAIN www.$DOMAIN;
@@ -234,8 +255,9 @@ sudo ln -s /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled
 sudo systemctl restart nginx
 
 
-# -------------------------------------------------------------
-printf "✅✅✅✅✅  INSTALLATION COMPLETE  ✅✅✅✅✅\n\n"
+# ==============================================================
+
+printf "\n\n\n✅✅✅✅✅  ${GREEN}INSTALLATION COMPLETE  ✅✅✅✅✅\n\n"
 
 
 
