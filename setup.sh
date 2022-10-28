@@ -17,7 +17,8 @@ sudo -H pip install -U pipenv
 
 pipenv install django gunicorn django-environ psycopg2 pillow whitenoise djlint
 source "$HOMEDIR/.venv/bin/activate"
-django-admin startproject config .
+django-admin startproject config 
+mv $HOMEDIR/config $HOMEDIR/src
 
 # --------------------------------------------------------------
 touch $HOMEDIR/.env
