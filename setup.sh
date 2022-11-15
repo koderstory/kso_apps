@@ -9,24 +9,26 @@ printf "===================================\n"
 printf "🔆🔆🔆  SETUP DJANGO PROJECT 🔆🔆🔆\n"
 printf "===================================\n"
 # ==============================================================
-printf "-----------------------------\n"
+printf "===================================\n"
 echo -ne "Enter your domain name:\n"
-printf "-----------------------------\n"
+printf "===================================\n"
 read DOMAIN
 
-printf "-----------------------------\n"
+printf "===================================\n"
 printf "\n\nChoose Action:\n1) Setup Server\n2) Delete Website (You can't undo)\n"
-printf "-----------------------------\n"
+printf "===================================\n"
 read ACTION
 
 if [ -z "$ACTION" ] 
 then
-	printf "\n\n\nNO ACTION SELECTED 🤷‍♂️  \n\n\n"
+    printf "===================================\n"
+	printf "NO ACTION SELECTED 🤷‍♂️"
+    printf "===================================\n"
+
+
 
 elif [ $ACTION -eq 1 ]
 then
-
-
 HOMEDIR="/home/${USER}/websites/${DOMAIN}"
 mkdir -p "$HOMEDIR/.venv"
 cd $HOMEDIR
@@ -264,8 +266,9 @@ sudo systemctl restart nginx
 
 
 # ==============================================================
-
-printf "\n\n\n✅✅✅✅✅  ${GREEN}INSTALLATION COMPLETE  ✅✅✅✅✅\n\n"
+printf "===================================\n"
+printf "✅✅✅✅✅  ${GREEN}INSTALLATION COMPLETE  ✅✅✅✅✅"
+printf "===================================\n"
 
 elif [ $ACTION -eq 2 ]
 then 
@@ -288,8 +291,9 @@ sudo systemctl reset-failed
 sudo rm /etc/nginx/sites-available/$DOMAIN
 sudo rm /etc/nginx/sites-enabled/$DOMAIN
 
-
-printf "\n\n\n😭 YOU DELETED WEBSITE 😭\n\n\n"
+printf "===================================\n"
+printf "😭 YOU DELETED WEBSITE 😭"
+printf "===================================\n"
 fi
 
 
