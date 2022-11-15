@@ -5,14 +5,18 @@ DBPASS=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12`
 GREEN='\033[1;36m'
 WHITE='\033[1;37m'
 # ==============================================================
+printf "===================================\n"
 printf "🔆🔆🔆  SETUP DJANGO PROJECT 🔆🔆🔆\n"
 printf "===================================\n"
 # ==============================================================
-
-echo -ne "- Enter your domain name:\n"
+printf "-----------------------------\n"
+echo -ne "Enter your domain name:\n"
+printf "-----------------------------\n"
 read DOMAIN
 
-printf "\n\n- Choose Action:\n1. Setup Server\n2. Delete Website (You can't undo)\nSelect ="
+printf "-----------------------------\n"
+printf "\n\nChoose Action:\n1) Setup Server\n2) Delete Website (You can't undo)\n"
+printf "-----------------------------\n"
 read ACTION
 
 if [ -z "$ACTION" ] 
