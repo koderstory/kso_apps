@@ -31,6 +31,11 @@ elif [ $ACTION -eq 1 ]
 then
 HOMEDIR="/home/${USER}/websites/${DOMAIN}"
 mkdir -p "$HOMEDIR/.venv"
+mkdir -p "$HOMEDIR/public/static"
+mkdir -p "$HOMEDIR/public/upload"
+mkdir -p "$HOMEDIR/assets"
+mkdir -p "$HOMEDIR/templates"
+
 cd $HOMEDIR
 
 # ==============================================================
@@ -117,7 +122,9 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR.parent / 'templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -175,9 +182,11 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', TemplateView.as_view(template_name="maintenance.html")),
 ]
 
 # Use a web server of your choice to serve the uploaded files. 
@@ -190,6 +199,33 @@ if settings.DEBUG == True:
 
 # ==============================================================
 printf "\n${GREEN}✅ Settings.py is configured ${WHITE}\n"
+# ==============================================================
+
+
+echo "
+
+<!doctype html>
+<title>Site Maintenance</title>
+<style>
+  body { text-align: center; padding: 150px; }
+  h1 { font-size: 50px; }
+  body { font: 20px Helvetica, sans-serif; color: #333; }
+  article { display: block; text-align: left; width: 650px; margin: 0 auto; }
+  a { color: #dc8100; text-decoration: none; }
+  a:hover { color: #333; text-decoration: none; }
+</style>
+
+<article>
+    <h1>We&rsquo;ll be back soon!</h1>
+    <div>
+        <p>Sorry for the inconvenience but we&rsquo;re performing some maintenance at the moment. 
+        <p>&mdash; The Team</p>
+    </div>
+</article>
+" | tee $HOMEDIR/templates/maintenance.html >> deploy.log
+
+# ==============================================================
+printf "\nTemplate Created\n"
 # ==============================================================
 
 echo "[Unit]
@@ -230,7 +266,7 @@ curl --unix-socket /run/gunicorn_$DOMAIN.sock localhost >> $HOMEDIR/deploy.log
 sudo systemctl daemon-reload
 
 # ==============================================================
-printf "\n${GREEN}✅ systemd is done ${WHITE}"
+printf "\n${GREEN}✅ systemd is done ${WHITE}\n"
 # ==============================================================
 
 echo "server {
@@ -267,7 +303,7 @@ sudo systemctl restart nginx
 
 # ==============================================================
 printf "===================================\n"
-printf "✅✅✅✅✅  ${GREEN}INSTALLATION COMPLETE  ✅✅✅✅✅"
+printf "✅✅✅✅✅  ${GREEN}INSTALLATION COMPLETE  ✅✅✅✅✅\n"
 printf "===================================\n"
 
 elif [ $ACTION -eq 2 ]
