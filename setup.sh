@@ -219,8 +219,8 @@ printf "\n${GREEN}✅ systemd is done ${WHITE}"
 echo "server {
     listen 80;
     server_name $DOMAIN www.$DOMAIN;
-    error_log /var/log/nginx/.$DOMAIN_error.log;
-    access_log /var/log/nginx/.$DOMAIN_access.log;
+    error_log /var/log/nginx/.$DOMAIN.error.log;
+    access_log /var/log/nginx/.$DOMAIN.access.log;
     rewrite_log on;
     server_tokens off;
     add_header X-Content-Type-Options nosniff;
