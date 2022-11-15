@@ -12,5 +12,6 @@ curl -o setup https://raw.githubusercontent.com/aldyahsn/django-instant-deploy/m
 - [X] using pipenv 
 - [x] integration with .env
 - [x] serving static file using whitenoise
+- [x] maintenance page
 - [ ] template error page
 - [ ] automatically collecting static assets

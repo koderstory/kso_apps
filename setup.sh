@@ -5,9 +5,9 @@ DBPASS=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12`
 GREEN='\033[1;36m'
 WHITE='\033[1;37m'
 # ==============================================================
-printf "===================================\n"
+printf "${GREEN}===================================\n"
 printf "🔆🔆🔆  SETUP DJANGO PROJECT 🔆🔆🔆\n"
-printf "===================================\n"
+printf "===================================${WHITE}\n"
 # ==============================================================
 printf "===================================\n"
 echo -ne "Enter your domain name:\n"
@@ -123,7 +123,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            BASE_DIR.parent / 'templates'
+            BASE_DIR.parent / 'templates',
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -186,7 +186,7 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', TemplateView.as_view(template_name="maintenance.html")),
+    path('', TemplateView.as_view(template_name='maintenance.html')),
 ]
 
 # Use a web server of your choice to serve the uploaded files. 
@@ -272,8 +272,8 @@ printf "\n${GREEN}✅ systemd is done ${WHITE}\n"
 echo "server {
     listen 80;
     server_name $DOMAIN www.$DOMAIN;
-    error_log /var/log/nginx/.$DOMAIN.error.log;
-    access_log /var/log/nginx/.$DOMAIN.access.log;
+    error_log /var/log/nginx/$DOMAIN.error.log;
+    access_log /var/log/nginx/$DOMAIN.access.log;
     rewrite_log on;
     server_tokens off;
     add_header X-Content-Type-Options nosniff;
@@ -303,7 +303,7 @@ sudo systemctl restart nginx
 
 # ==============================================================
 printf "===================================\n"
-printf "✅✅✅✅✅  ${GREEN}INSTALLATION COMPLETE  ✅✅✅✅✅\n"
+printf "✅  ${GREEN}INSTALLATION COMPLETE  ✅${WHITE}\n"
 printf "===================================\n"
 
 elif [ $ACTION -eq 2 ]
