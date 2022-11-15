@@ -9,8 +9,19 @@ printf "🔆🔆🔆  SETUP DJANGO PROJECT 🔆🔆🔆\n"
 printf "===================================\n"
 # ==============================================================
 
-echo -ne "Enter your domain name:"
+echo -ne "- Enter your domain name:\n"
 read DOMAIN
+
+printf "\n\n- Choose Action:\n1. Setup Server\n2. Delete Website (You can't undo)\nSelect ="
+read ACTION
+
+if [ -z "$ACTION" ] 
+then
+	printf "\n\n\nNO ACTION SELECTED 🤷‍♂️  \n\n\n"
+
+elif [ $ACTION -eq 1 ]
+then
+
 
 HOMEDIR="/home/${USER}/websites/${DOMAIN}"
 mkdir -p "$HOMEDIR/.venv"
@@ -251,6 +262,31 @@ sudo systemctl restart nginx
 # ==============================================================
 
 printf "\n\n\n✅✅✅✅✅  ${GREEN}INSTALLATION COMPLETE  ✅✅✅✅✅\n\n"
+
+elif [ $ACTION -eq 2 ]
+then 
+
+#!/bin/bash
+
+sudo rm -r /home/$USER/websites/$DOMAIN
+sudo systemctl stop gunicorn_$DOMAIN.service
+sudo systemctl disable gunicorn_$DOMAIN.service
+
+sudo systemctl stop gunicorn_$DOMAIN.socket
+sudo systemctl disable gunicorn_$DOMAIN.socket
+
+sudo rm /etc/systemd/system/gunicorn_$DOMAIN.service
+sudo rm /etc/systemd/system/gunicorn_$DOMAIN.socket
+
+sudo systemctl daemon-reload
+sudo systemctl reset-failed
+
+sudo rm /etc/nginx/sites-available/$DOMAIN
+sudo rm /etc/nginx/sites-enabled/$DOMAIN
+
+
+printf "\n\n\n😭 YOU DELETED WEBSITE 😭\n\n\n"
+fi
 
 
 
