@@ -22,7 +22,7 @@ read ACTION
 if [ -z "$ACTION" ] 
 then
     printf "===================================\n"
-	printf "NO ACTION SELECTED 🤷‍♂️"
+	printf "NO ACTION SELECTED 🤷‍♂️\n"
     printf "===================================\n"
 
 
@@ -328,7 +328,7 @@ sudo rm /etc/nginx/sites-available/$DOMAIN
 sudo rm /etc/nginx/sites-enabled/$DOMAIN
 
 printf "===================================\n"
-printf "😭 YOU DELETED WEBSITE 😭"
+printf "😭 YOU DELETED WEBSITE 😭\n"
 printf "===================================\n"
 fi
 
