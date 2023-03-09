@@ -1,4 +1,7 @@
 #!/bin/bash
+sudo apt update -y && sudo apt upgrade -y
+sudo apt install build-essential libbz2-dev libreadline-dev libssl-dev libsqlite3-dev zlib1g-dev python3-dev libpq-dev  libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev git
+sudo apt install python3-dev python3-venv python3-pip postgresql postgresql-contrib libpq-dev nginx
 
 # Generate passowrds
 DBPASS=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c12`
