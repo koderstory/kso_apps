@@ -1,3 +1,6 @@
+REFERENCE:
+https://hiteshmishra708.medium.com/deploy-django-app-with-nginx-and-gunicorn-37916ede7db
+
 # Installation libraries
 
 ```
