@@ -1,0 +1,11 @@
+// src/styles/main.scss
+@import '~@tabler/core/src/scss/core.scss';
+
+body {
+  background-color: grey;
+}
+
+.custom-button {
+  @extend .btn-primary;
+  background-color: darkblue;
+}
