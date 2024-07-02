@@ -1,12 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ESM with Webpack, Babel, and TypeScript</title>
-</head>
-<body>
-  <h1>Hello, ESM with Webpack, Babel, and TypeScript!</h1>
-  <script src="../frontend/dist/bundle.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dummy Title</title>
+  </head>
+  <body>
+    <div class="page">
+      {% include "components/page-header.html" %}
+      {% include "components/page-wrapper.html" %}
+    </div>
+    <script src="{% static "bundle.js" %}"></script>
+  </body>
 </html>

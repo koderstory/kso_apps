@@ -1,9 +1,9 @@
 import './styles/main.scss';
-import { showAlert } from './utils/helper';
-import { initializeMyComponent } from './components/component1';
+import '@tabler/core/dist/js/tabler.js';
 
-const message: string = 'Hello, TypeScript with Webpack and Babel!';
-console.log(message);
+document.addEventListener('DOMContentLoaded', () => {
+    
+});
 
-showAlert(message);
-initializeMyComponent();
+
+
