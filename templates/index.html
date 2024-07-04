@@ -1,16 +1,9 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dummy Title</title>
-  </head>
-  <body>
-    <div class="page">
-      {% include "components/page-header.html" %}
-      {% include "components/page-wrapper.html" %}
-    </div>
-    <script src="{% static "bundle.js" %}"></script>
-  </body>
-</html>
+{% extends "base_page.html" %}
+
+
+{% block wrapper %}
+
+<div class="container">
+    <h1>Hello World</h1>
+</div>
+{% endblock wrapper %}
