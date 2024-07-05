@@ -1,14 +1,76 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    {% block css %}
-    {% endblock css %}
-  </head>
-  <body>
-    {% block wrapper %}
-    {% endblock wrapper %}
-    {% block js %}
-    {% endblock js %}
-  </body>
+    <head>
+        <!-- Essential Meta Tags -->
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <!-- SEO Meta Tags -->
+        <title>
+            {% block head_title %}
+            {% endblock head_title %}
+        </title>
+        <meta name="description" content="A brief description of the page content.">
+        <meta name="keywords" content="keyword1, keyword2, keyword3">
+        <meta name="author" content="Your Name or Company Name">
+        <!-- Open Graph Meta Tags (for social media sharing) -->
+        <meta property="og:title" content="Your Page Title">
+        <meta property="og:description"
+              content="A brief description of the page content.">
+        <meta property="og:image"
+              content="https://www.example.com/path/to/image.jpg">
+        <meta property="og:url" content="https://www.example.com/your-page-url">
+        <meta property="og:type" content="website">
+        <!-- Twitter Card Meta Tags (for Twitter sharing) -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="Your Page Title">
+        <meta name="twitter:description"
+              content="A brief description of the page content.">
+        <meta name="twitter:image"
+              content="https://www.example.com/path/to/image.jpg">
+        <meta name="twitter:site" content="@yourtwitterhandle">
+        <!-- Canonical Link (to avoid duplicate content issues) -->
+        <link rel="canonical" href="https://www.example.com/your-page-url">
+        <!-- Favicon and Apple Touch Icons -->
+        <link rel="icon"
+              href="https://www.example.com/path/to/favicon.ico"
+              type="image/x-icon">
+        <link rel="apple-touch-icon"
+              sizes="180x180"
+              href="https://www.example.com/path/to/apple-touch-icon.png">
+        <!-- Stylesheets -->
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler.min.css">
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler-flags.min.css">
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler-payments.min.css">
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/css/tabler-vendors.min.css">
+        {% block css %}
+        {% endblock css %}
+        <!-- Additional Meta Tags -->
+        <meta name="robots" content="index, follow">
+        <meta name="theme-color" content="#ffffff">
+    </head>
+    <body>
+        <div class="page">
+            <!-- navbar -->
+            {% block navbar %}
+            {% endblock navbar %}
+            <!-- breadcrumbs -->
+            {% block breadcrumbs %}
+            {% endblock breadcrumbs %}
+            <!-- page contents -->
+            {% block page_wrapper %}
+            {% endblock page_wrapper %}
+            <!-- footers -->
+            {% block footer %}
+            {% endblock footer %}
+            <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+            {% block js %}
+            {% endblock js %}
+        </div>
+    </body>
 </html>
