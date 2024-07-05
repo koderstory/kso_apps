@@ -3,12 +3,12 @@
     {% include "components/navbar/navbar_simple.html" %}
 {% endblock navbar %}
 {% block page_wrapper %}
-    <div class="container">
-        <h1>this is content</h1>
-    </div>
+    {% include "components/blocks_hero/center.html" %}
+    {% include "components/blocks_hero/center_with_image.html" %}
+    {% include "components/blocks_hero/left_with_image.html" %}
+    {% include "components/blocks_hero/vertical.html" %}
+    {% include "components/blocks_hero/left_with_cropped_image.html" %}
 {% endblock page_wrapper %}
-
-
 {% block footer %}
     {% include "components/footer/footer_simple.html" %}
 {% endblock footer %}
