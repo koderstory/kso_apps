@@ -1,14 +1,5 @@
 {% extends "base.html" %}
 {% block navbar %}
-    {% include "components/navbar/navbar_simple.html" %}
+    {% include "_marketing/elements/navbar/gradient.html" %}
+    {% include "_marketing/page_sections/hero/jumbotron.html" %}
 {% endblock navbar %}
-{% block page_wrapper %}
-    {% include "components/blocks_hero/center.html" %}
-    {% include "components/blocks_hero/center_with_image.html" %}
-    {% include "components/blocks_hero/left_with_image.html" %}
-    {% include "components/blocks_hero/vertical.html" %}
-    {% include "components/blocks_hero/left_with_cropped_image.html" %}
-{% endblock page_wrapper %}
-{% block footer %}
-    {% include "components/footer/footer_simple.html" %}
-{% endblock footer %}
