@@ -9,6 +9,9 @@ django-environ = "*"
 djlint = "*"
 whitenoise = "*"
 gunicorn = "*"
+psycopg2-binary = "*"
+django-import-export = "*"
+django-admin-interface = "*"
 
 [dev-packages]
 

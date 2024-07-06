@@ -9,21 +9,26 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import environ
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Environ
+env = environ.Env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-)t(1i@#b+l%+cu4fcbd8%r$^5uxg()euv84%_^cfglb4y^3ryf'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -76,10 +81,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': env.db(),
 }
 
 
@@ -122,6 +124,41 @@ STATIC_ROOT = BASE_DIR / 'public' #output of collectstatic, dynamically replaced
 STATICFILES_DIRS = [
     BASE_DIR / 'frontend' / 'dist',
 ]
+
+
+# Media files (user-uploaded content)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'public' / 'media'
+
+if env.bool('S3_MEDIA'):
+    AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
+    AWSS_S3_SIGNATURE_VERSION = 's3v4'
+    AWS_S3_REGION_NAME = 'singapore'
+    AWS_S3_FILE_OVERWRITE = True
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_VERIFY = True
+    AWS_S3_ENDPOINT_URL = env('AWS_S3_ENDPOINT_URL')
+
+STORAGES = {
+    'default':{
+        'BACKEND': "storages.backends.s3boto3.S3Boto3Storage",        
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+    
+}
+
+# JQUERY_URL = True
+X_FRAME_OPTIONS = "SAMEORIGIN"
+SILENCED_SYSTEM_CHECKS = ["security.W019"]
+
+# DJANGO IMPORT-EXPORTS
+from import_export.formats.base_formats import CSV, XLSX
+IMPORT_FORMATS = [CSV, XLSX, ]
+EXPORT_FORMATS = [CSV, XLSX, ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
