@@ -108,7 +108,7 @@ media/
 *.db
 *.pid
 
-public/
+public/media
 
 node_modules/
 
