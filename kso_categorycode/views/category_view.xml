@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="product_category_form_view_inherit" model="ir.ui.view">
+            <field name="name">product.category.form.inherit</field>
+            <field name="model">product.category</field>
+            <field name="inherit_id" ref="product.product_category_form_view" />
+            <field name="arch" type="xml">
+                <xpath expr="//div[hasclass('oe_title')]" position="after">
+                    <group>
+                        <field name="code" placeholder=""/>
+                    </group>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record id="product_category_form_list_product" model="ir.ui.view">
+            <field name="name">product.category.view.list.inherit</field>
+            <field name="model">product.category</field>
+            <field name="inherit_id" ref="product.product_category_list_view"/>
+            <field name="arch" type="xml">
+                <list string="Product Categories">
+                    <field name="code" string="Code" />
+                </list>
+            </field>
+        </record>
+
+
+
+    </data>
+</odoo>

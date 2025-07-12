@@ -1,0 +1,17 @@
+<odoo>
+    <record id="view_partner_form_inherit_is_flags" model="ir.ui.view">
+        <field name="name">res.partner.form.is-flags</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <!-- Place after supplier_rank field -->
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="is_vendor"/>
+            </xpath>
+            <!-- Place after customer_rank field -->
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="is_customer"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

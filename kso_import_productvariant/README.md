@@ -1,0 +1,1 @@
+# kso_product_variant_import

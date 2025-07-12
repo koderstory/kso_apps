@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Product Variant Import Module Management -->
+    <record model="ir.module.category" id="productvariant_import_management">
+        <field name="name">Import Product - Variant</field>
+        <field name="description">Enable to import product with its variant through wizard</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="productvariant_import_access_group" model="res.groups">
+        <field name="name">Product - Variant Import Manager</field>
+        <field name="category_id" ref="productvariant_import_management"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

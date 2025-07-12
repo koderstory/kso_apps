@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- PRODUCT TEMPLATE -->
+        <record id="view_product_template_form_inherit" model="ir.ui.view">
+            <field name="name">product.template.form.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_only_form_view" />
+            <field name="arch" type="xml">
+
+                <!-- Locate dimension  -->
+                <xpath expr="//page[@name='general_information']" position="inside">
+                    <group string="Dimensions">
+                        <!-- <group>
+                            <field name="width" placeholder="or Length if size using LxWxH" />
+                            <field name="depth" placeholder="or Width if size using LxWxH" />
+                            <field name="height" placeholder="" />
+                        </group>
+                        <group>
+                            <field name="dimension" placeholder="E.g w260 x d85 x h75 x bh70" />
+                            <field name="cbm" placeholder="" />
+                        </group> -->
+                    </group>
+                </xpath>
+
+                <!-- Locate the internal reference field and make it readonly -->
+                <field name="default_code" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </field>
+
+            </field>
+        </record>
+
+
+        <!-- PRODUCT PRODUCT -->
+        <record id="product_template_form_inherit" model="ir.ui.view">
+            <field name="name">product.product.form.inherit</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view" />
+            <field name="arch" type="xml">
+
+
+                <!-- Locate dimension  -->
+                <xpath expr="//page[@name='general_information']" position="inside">
+                    <group string="Dimensions">
+                        <!-- <group>
+                            <field name="width" placeholder="or Length if size using LxWxH" />
+                            <field name="depth" placeholder="or Width if size using LxWxH" />
+                            <field name="height" placeholder="" />
+                        </group>
+                        <group>
+                            <field name="dimension" placeholder="E.g w260 x d85 x h75 x bh70" />
+                            <field name="cbm" placeholder="" />
+                        </group> -->
+                    </group>
+                </xpath>
+
+
+                <field name="default_code" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                </field>
+                <!-- <xpath expr="//page[@name='general_information']" position="after">
+                    <group string="Container Specs">
+                        <group>
+                            <field name="width" placeholder="or Length if size using LxWxH" />
+                            <field name="depth" placeholder="or Width if size using LxWxH" />
+                            <field name="height" placeholder="" />
+                        </group>
+                        <group>
+                            <field name="dimension" placeholder="E.g w260 x d85 x h75 x bh70" />
+                            <field name="cbm" placeholder="" />
+                        </group>
+                    </group>
+                </xpath> -->
+
+
+            </field>
+        </record>
+
+
+    </data>
+</odoo>
