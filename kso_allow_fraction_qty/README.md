@@ -1,0 +1,1 @@
+# kso_allow_fraction_qty
