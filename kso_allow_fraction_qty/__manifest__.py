@@ -16,7 +16,7 @@
     # 'demo': [
     #     ''
     # ],
-    'auto_install': False,
+    'auto_install': True,
     'application': False,
     # 'assets': {
         

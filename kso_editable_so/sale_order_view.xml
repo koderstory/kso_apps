@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="view_order_form_inherit_edit_name" model="ir.ui.view">
+      <field name="name">sale.order.form.edit.name</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"/>
+      <field name="arch" type="xml">
+        <!-- target the SO name field wherever it is -->
+        <xpath expr="//field[@name='name']" position="attributes">
+          <!-- always start with it editable -->
+          <attribute name="readonly">0</attribute>
+          <!-- then lock it as soon as state != draft -->
+          <attribute name="modifiers">{'readonly': [('state','!=','draft')]}</attribute>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
