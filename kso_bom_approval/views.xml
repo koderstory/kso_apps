@@ -36,7 +36,7 @@
             <field 
               name="state"
               widget="statusbar"
-              statusbar_visible="draft,to_approve,approved,refused"/>
+              statusbar_visible="refused,draft,to_approve,approved"/>
           </header>
         </xpath>
       </field>

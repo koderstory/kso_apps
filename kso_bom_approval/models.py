@@ -5,10 +5,11 @@ class MrpBom(models.Model):
     _inherit = "mrp.bom"
 
     state = fields.Selection([
+        ('refused', 'Refused'),
         ('draft', 'Draft'),
         ('to_approve', 'To Approve'),
         ('approved', 'Approved'),
-        ('refused', 'Refused'),
+        
     ], string="Approval State", readonly=True, copy=False, default='draft', tracking=True)
 
     def action_submit(self):
