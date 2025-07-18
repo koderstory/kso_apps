@@ -8,6 +8,9 @@
     'data': [
         'views/stock_lot_views.xml',
         'views/stock_move_line_views.xml',
+        'views/stock_move_line_detailed_operation_tree_dimension.xml',
+        'views/stock_move_line_form_dimensions.xml',
+        'views/production_lot_tree_dimensions.xml',
     ],
     'installable': True,
     'application': False,

@@ -1,0 +1,13 @@
+<odoo>
+  <record id="view_stock_move_line_form_width" model="ir.ui.view">
+    <field name="name">stock.move.line.form.width</field>
+    <field name="model">stock.move.line</field>
+    <field name="inherit_id" ref="stock.view_move_line_form"/>
+    <field name="arch" type="xml">
+      <!-- insert after the lot_name field -->
+      <xpath expr="//field[@name='lot_name']" position="after">
+        <field name="width" string="Width (cm)"/>
+      </xpath>
+    </field>
+  </record>
+</odoo>
