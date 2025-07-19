@@ -2,11 +2,13 @@
   <record id="view_production_lot_tree_inherit_width" model="ir.ui.view">
     <field name="name">stock.lot.tree.inherit.width</field>
     <field name="model">stock.lot</field>
-    <field name="inherit_id" ref="stock.view_production_lot_tree"/>
+    <field name="inherit_id" ref="stock.view_production_lot_tree" />
     <field name="arch" type="xml">
       <!-- insert Width right after the product column -->
       <xpath expr="//field[@name='product_id']" position="after">
-        <field name="width" string="Width (cm)" />
+          <field name="length" string="Length (cm)" />
+          <field name="width" string="Width (cm)" />
+          <field name="height" string="Height (cm)" />
       </xpath>
     </field>
   </record>

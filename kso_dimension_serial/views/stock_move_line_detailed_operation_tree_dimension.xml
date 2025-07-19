@@ -6,12 +6,9 @@
     <field name="arch" type="xml">
       <!-- insert after the lot_name field -->
       <xpath expr="//field[@name='lot_name']" position="after">
-        <field
-          name="width"
-          string="Width (cm)"
-          readonly="state in ('done','cancel') and is_locked"
-          force_save="1"
-        />
+        <field name="length" string="Length (cm)" readonly="state in ('done','cancel') and is_locked" force_save="1"/>
+        <field name="width"  string="Width (cm)"  readonly="state in ('done','cancel') and is_locked" force_save="1"/>
+        <field name="height" string="Height (cm)" readonly="state in ('done','cancel') and is_locked" force_save="1"/>
       </xpath>
     </field>
   </record>
