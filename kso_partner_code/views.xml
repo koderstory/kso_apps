@@ -1,0 +1,57 @@
+<odoo>
+    <data>
+        <record id="view_partner_form_inherit_code" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit.code</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form" />
+            <field name="arch" type="xml">
+                <!-- Insert after the name field, for example -->
+                <field name="name" position="before">
+                    <field name="partner_code" readonly="1" />
+                </field>
+            </field>
+        </record>
+
+
+        <record id="view_purchase_order_form_inherit_supplier" model="ir.ui.view">
+            <field name="name">purchase.order.form.inherit.supplier_only</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form" />
+            <field name="arch" type="xml">
+                <!-- locate the vendor field (partner_id) and add a domain -->
+                <field name="partner_id" position="attributes">
+                    <!-- only partners with supplier_rank ≥ 1 -->
+                    <attribute name="domain">[('supplier_rank','>=',1)]</attribute>
+                    <!-- optional: let the res_partner widget know to search suppliers -->
+                    <attribute name="context">{'res_partner_search_mode': 'supplier'}</attribute>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_sale_order_form_inherit_customer" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit.customer_only</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form" />
+            <field name="arch" type="xml">
+                <!-- locate the vendor field (partner_id) and add a domain -->
+                <field name="partner_id" position="attributes">
+                    <!-- only partners with customer_rank ≥ 1 -->
+                    <attribute name="domain">[('customer_rank','>=',1)]</attribute>
+                    <!-- optional: let the res_partner widget know to search customer -->
+                    <attribute name="context">{'res_partner_search_mode': 'customer'}</attribute>
+                </field>
+            </field>
+        </record>
+
+
+
+
+        <record id="seq_res_partner_code" model="ir.sequence">
+            <field name="name">Partner Code</field>
+            <field name="code">res.partner.partner.code</field>
+            <field name="padding">5</field>
+            <field name="prefix">P</field>
+            <field name="number_next">1</field>
+        </record>
+    </data>
+</odoo>

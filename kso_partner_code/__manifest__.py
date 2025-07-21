@@ -4,7 +4,7 @@
     'author': 'Your Name',
     'category': 'Contacts',
     'summary': 'Add boolean fields is_customer and is_vendor to partners',
-    'depends': ['base', 'contacts'],
+    'depends': ['base', 'contacts', 'purchase', 'sale_management'],
     'data': [
         'views.xml',
     ],
