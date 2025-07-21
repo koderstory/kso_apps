@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <data>
+
+    <!-- 1) Add Customer / Vendor checkboxes to the partner form -->
+    <record id="view_res_partner_form_flags" model="ir.ui.view">
+      <field name="name">res.partner.form.flags</field>
+      <field name="model">res.partner</field>
+      <field name="inherit_id" ref="base.view_partner_form"/>
+      <field name="arch" type="xml">
+        <xpath expr="//page[@name='sales_purchases']/group[@name='container_row_2']/group[@name='purchase']" position="after">
+          <group string="Partner Flags">
+            <field name="is_customer"/>
+            <field name="is_vendor"/>
+          </group>
+        </xpath>
+      </field>
+    </record>
+
+    <!-- 2) Set Domain in Action -->
+    <record id="account.res_partner_action_customer" model="ir.actions.act_window">
+      <!-- replace (or merge with) its existing domain -->
+      <field name="domain">[('is_customer','=',True),('active','=',True)]</field>
+      <!-- push a default search filter -->
+      <field name="context">{'default_is_customer': True, 'default_customer_rank': 1, 'search_default_customer': 1}</field>
+      <!-- you can also tweak limit, filter-checkbox, etc. -->
+      <field name="limit" eval="80"/>
+      <field name="filter" eval="True"/>
+    </record>
+
+    <!-- 3) Set Domain in Action -->
+    <record id="account.res_partner_action_customer" model="ir.actions.act_window">
+      <!-- replace (or merge with) its existing domain -->
+      <field name="domain">[('is_vendor','=',True),('active','=',True)]</field>
+      <!-- push a default search filter -->
+      <field name="context">{'default_is_customer': True, 'default_customer_rank': 1, 'search_default_customer': 1}</field>
+      <!-- you can also tweak limit, filter-checkbox, etc. -->
+      <field name="limit" eval="80"/>
+      <field name="filter" eval="True"/>
+    </record>
+
+
+
+
+  </data>
+</odoo>
