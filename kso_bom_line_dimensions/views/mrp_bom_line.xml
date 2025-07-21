@@ -7,9 +7,14 @@
         <field name="arch" type="xml">
             <!-- Add dimension columns next to other fields in the Components list -->
             <xpath expr="//page[@name='components']//field[@name='bom_line_ids']/list" position="inside">
-                <field name="length"/>
-                <field name="width"/>
-                <field name="height"/>
+                <field name="length" optional="hide"/>
+                <field name="width"  optional="hide"/>
+                <field name="height" optional="hide"/>
+            </xpath>
+
+            <!-- Add left/right borders to the Quantity column -->
+            <xpath expr="//page[@name='components']//field[@name='bom_line_ids']/list/field[@name='product_qty']" position="attributes">
+                <attribute name="style">border-left:1px solid #d3d3d3; border-right:1px solid #d3d3d3;</attribute>
             </xpath>
         </field>
     </record>
