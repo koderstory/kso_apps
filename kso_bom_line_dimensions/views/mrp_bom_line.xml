@@ -1,0 +1,16 @@
+<odoo>
+     <!-- ONLY: Extend the main BOM form to show dimension columns on the Components page -->
+    <record id="view_mrp_bom_form_inherit_dimensions" model="ir.ui.view">
+        <field name="name">mrp.bom.form.dimensions</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Add dimension columns next to other fields in the Components list -->
+            <xpath expr="//page[@name='components']//field[@name='bom_line_ids']/list" position="inside">
+                <field name="length"/>
+                <field name="width"/>
+                <field name="height"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

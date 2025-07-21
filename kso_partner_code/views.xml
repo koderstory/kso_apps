@@ -1,18 +1,53 @@
 <odoo>
     <data>
+
+        <!-- Field Partner Code in Form -->
         <record id="view_partner_form_inherit_code" model="ir.ui.view">
             <field name="name">res.partner.form.inherit.code</field>
             <field name="model">res.partner</field>
             <field name="inherit_id" ref="base.view_partner_form" />
             <field name="arch" type="xml">
                 <!-- Insert after the name field, for example -->
-                <field name="name" position="before">
-                    <field name="partner_code" readonly="1" />
+                <field name="name" position="after">
+                    <field name="partner_code" readonly="1" style="font-size:0.5em; color: #555;" />
                 </field>
             </field>
         </record>
 
+        <!-- 1) Add partner_code to the partner list (tree) view -->
+        <record id="view_partner_tree_inherit_code" model="ir.ui.view">
+            <field name="name">res.partner.tree.inherit.code</field>
+            <field name="model">res.partner</field>
+            <!-- base.view_partner_tree is the external ID of the default partner list -->
+            <field name="inherit_id" ref="base.view_partner_tree" />
+            <field name="arch" type="xml">
+                <!-- insert your column right after the “Name” column -->
+                <xpath expr="//field[@name='complete_name']" position="before">
+                    <field name="partner_code" readonly="1"/>
+                </xpath>
+            </field>
+        </record>
 
+        <!-- 2) Add partner_code to the partner kanban view -->
+        <record id="view_partner_kanban_inherit_code" model="ir.ui.view">
+            <field name="name">res.partner.kanban.inherit.code</field>
+            <field name="model">res.partner</field>
+            <!-- base.view_partner_kanban is the default partner kanban -->
+            <field name="inherit_id" ref="base.res_partner_kanban_view" />
+            <field name="arch" type="xml">
+                <!-- drop it into the top section of each card -->
+                <xpath expr="//div[contains(@class,'o_kanban_record_top')]" position="inside">
+                    <t t-if="record.partner_code.raw_value">
+                        <div class="o_partner_code_small">
+                            <field name="partner_code" />
+                        </div>
+                    </t>
+                </xpath>
+            </field>
+        </record>
+
+        
+        <!-- Filter when searching vendor from Sales Order page -->
         <record id="view_purchase_order_form_inherit_supplier" model="ir.ui.view">
             <field name="name">purchase.order.form.inherit.supplier_only</field>
             <field name="model">purchase.order</field>
@@ -28,6 +63,8 @@
             </field>
         </record>
 
+
+        <!-- Filter when searching customer from Purchase Order page -->
         <record id="view_sale_order_form_inherit_customer" model="ir.ui.view">
             <field name="name">sale.order.form.inherit.customer_only</field>
             <field name="model">sale.order</field>
@@ -42,8 +79,6 @@
                 </field>
             </field>
         </record>
-
-
 
 
         <record id="seq_res_partner_code" model="ir.sequence">
