@@ -32,14 +32,14 @@ class MrpBomLine(models.Model):
         and adjust product_qty to the computed volume in m3.
         """
         for line in self:
-            if line.length and line.width and line.height:
+            if line.length or line.width or line.height:
                 # Compute volume in cubic meters (cm3 to m3)
                 volume_m3 = (line.length * line.width * line.height) / 1000000.0
                 # Try to set to the standard m3 UoM
-                try:
-                    m3_uom = self.env.ref('uom.product_uom_m3')
+                m3_uom = self.env['uom.uom'].search([('name', '=', 'm³')], limit=1)
+                if m3_uom:
                     line.product_uom_id = m3_uom
-                except Exception:
-                    _logger.warning('m3 UoM not found, skipping UoM change')
-                # Update the quantity to the volume
+                else:
+                    _logger.warning("No UoM named 'm³' found; skipping UoM change")
+                # Set the quantity to the computed volume
                 line.product_qty = volume_m3
