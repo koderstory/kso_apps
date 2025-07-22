@@ -5,9 +5,17 @@
     <record id="view_order_form_inherit_proforma" model="ir.ui.view">
       <field name="name">sale.order.form.proforma.inherit</field>
       <field name="model">sale.order</field>
-      <field name="inherit_id" ref="sale.view_order_form"/>
-      <field name="priority" eval="25"/>
+      <field name="inherit_id" ref="sale.view_order_form" />
+      <field name="priority" eval="25" />
       <field name="arch" type="xml">
+
+        <xpath expr="//field[@name='partner_id']" position="after">
+          <field name="shipping_type"
+            widget="radio"
+            options="{'horizontal': true}"
+            class="o_inline"
+            />
+        </xpath>
 
         <!-- 1) Extend the statusbar by targeting the <field name="state"> in the header -->
         <xpath expr="//header/field[@name='state']" position="attributes">
@@ -19,10 +27,10 @@
         <!-- 2) Add a "Pro Forma Invoice" button that only shows when state = 'sent' -->
         <xpath expr="//header" position="inside">
           <button name="action_proforma"
-                  string="Pro Forma Invoice"
-                  type="object"
-                  class="btn-secondary"
-                  invisible="state != 'draft'"/>
+            string="Pro Forma Invoice"
+            type="object"
+            class="btn-secondary"
+            invisible="state != 'draft'" />
         </xpath>
 
         <!-- 1) Allow “Send by Email” in proforma, not just sent/sale -->
