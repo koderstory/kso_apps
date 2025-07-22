@@ -1,0 +1,61 @@
+<odoo>
+  <data>
+
+    <!-- Inherit the main Sales Order form -->
+    <record id="view_order_form_inherit_proforma" model="ir.ui.view">
+      <field name="name">sale.order.form.proforma.inherit</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"/>
+      <field name="priority" eval="25"/>
+      <field name="arch" type="xml">
+
+        <!-- 1) Extend the statusbar by targeting the <field name="state"> in the header -->
+        <xpath expr="//header/field[@name='state']" position="attributes">
+          <attribute name="statusbar_visible">
+            draft,sent,proforma,sale
+          </attribute>
+        </xpath>
+
+        <!-- 2) Add a "Pro Forma Invoice" button that only shows when state = 'sent' -->
+        <xpath expr="//header" position="inside">
+          <button name="action_proforma"
+                  string="Pro Forma Invoice"
+                  type="object"
+                  class="btn-secondary"
+                  invisible="state != 'draft'"/>
+        </xpath>
+
+        <!-- 1) Allow “Send by Email” in proforma, not just sent/sale -->
+        <xpath expr="//header/button[@id='send_by_email']" position="attributes">
+          <attribute name="invisible">
+            state not in ('sent','proforma','sale')
+          </attribute>
+        </xpath>
+
+        <!-- 2) Allow “Cancel” in proforma -->
+        <xpath expr="//header/button[@name='action_cancel']" position="attributes">
+          <attribute name="invisible">
+            state not in ('draft','sent','proforma','sale')
+          </attribute>
+        </xpath>
+
+        <!-- 2) Show Confirm in both sent & proforma -->
+        <xpath expr="//header/button[@name='action_confirm']" position="attributes">
+          <attribute name="invisible">
+            state not in ('sent','proforma')
+          </attribute>
+        </xpath>
+
+        <!-- (Optionally) re‑insert any other buttons you want in proforma -->
+        <!-- e.g. the “Send PRO‑FORMA Invoice” primary button -->
+        <xpath expr="//header/button[@id='send_proforma']" position="attributes">
+          <attribute name="invisible">
+            state not in ('draft','proforma')
+          </attribute>
+        </xpath>
+
+      </field>
+    </record>
+
+  </data>
+</odoo>
