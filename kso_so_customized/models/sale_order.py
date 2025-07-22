@@ -27,7 +27,7 @@ class SaleOrder(models.Model):
 
     # ─── NEW CODE FIELDS ──────────────────────────────────────────────────────
     code_quotation   = fields.Char(string="Quotation Code",    copy=False)
-    code_pi          = fields.Char(string="Pro Forma Code",    copy=False)
+    code_pi          = fields.Char(string="Pro Forma Code",    copy=False)
     code_salesorder  = fields.Char(string="Sales Order Code",  copy=False)
 
     # ─── QUOTATION: name + code on create ────────────────────────────────────
@@ -36,23 +36,26 @@ class SaleOrder(models.Model):
         # only auto‑name & set code if no explicit name given
         if not vals.get('name') or vals.get('name') in ('/', False, ''):
             # compute SO<YY>-<00001…>
-            today = fields.Date.context_today(self)
-            date_obj = (
-                today if not isinstance(today, str)
-                else datetime.strptime(today, '%Y-%m-%d').date()
-            )
-            yy = date_obj.strftime('%y')
-            year_start = datetime(date_obj.year, 1, 1)
-            year_end   = year_start + relativedelta(years=1)
-            count = self.search_count([
-                ('create_date', '>=', year_start.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-                ('create_date', '<',  year_end.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-            ]) + 1
-            name = f"SO{yy}-{count:05d}"
-            vals.update({
-                'name': name,
-                'code_quotation': name,
-            })
+            if vals.get('code_quotation'):
+                vals['name'] = vals['code_quotation']
+            else:
+                today = fields.Date.context_today(self)
+                date_obj = (
+                    today if not isinstance(today, str)
+                    else datetime.strptime(today, '%Y-%m-%d').date()
+                )
+                yy = date_obj.strftime('%y')
+                year_start = datetime(date_obj.year, 1, 1)
+                year_end   = year_start + relativedelta(years=1)
+                count = self.search_count([
+                    ('create_date', '>=', year_start.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+                    ('create_date', '<',  year_end.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+                ]) + 1
+                name = f"SO{yy}-{count:05d}"
+                vals.update({
+                    'name': name,
+                    'code_quotation': name,
+                })
         return super().create(vals)
 
     # ─── PRO FORMA: name + code when you click Pro Forma ──────────────────────
@@ -62,22 +65,26 @@ class SaleOrder(models.Model):
             if not partner_code:
                 raise UserError("Please set a Partner Code on the customer before generating Pro Forma.")
             # build PI-<CODE>-YYYYMM-0001…
-            dt = order.create_date or fields.Datetime.now()
-            dt = datetime.strptime(dt, DEFAULT_SERVER_DATETIME_FORMAT) if isinstance(dt, str) else dt
-            m_start = dt.replace(day=1, hour=0, minute=0, second=0)
-            m_end   = m_start + relativedelta(months=1)
-            count = self.search_count([
-                ('id', '!=', order.id),
-                ('state', '=', 'proforma'),
-                ('create_date', '>=', m_start.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-                ('create_date', '<',  m_end.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-            ]) + 1
-            code = f"PI-{partner_code}-{dt.strftime('%Y%m')}-{count:04d}"
-            # write name+state, and code_pi only if not already set
-            vals = {'name': code, 'state': 'proforma'}
-            if not order.code_pi:
-                vals['code_pi'] = code
-            order.write(vals)
+            if order.code_pi:
+                code = order.code_pi
+            else:
+                dt = order.create_date or fields.Datetime.now()
+                dt = datetime.strptime(dt, DEFAULT_SERVER_DATETIME_FORMAT) if isinstance(dt, str) else dt
+                m_start = dt.replace(day=1, hour=0, minute=0, second=0)
+                m_end   = m_start + relativedelta(months=1)
+                count = self.search_count([
+                    ('id', '!=', order.id),
+                    ('state', '=', 'proforma'),
+                    ('create_date', '>=', m_start.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+                    ('create_date', '<',  m_end.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+                ]) + 1
+                code = f"PI-{partner_code}-{dt.strftime('%Y%m')}-{count:04d}"
+                order.code_pi = code
+            # set name & state
+            order.write({
+                'name': code,
+                'state': 'proforma',
+            })
         return True
 
     # ─── SALES ORDER: name + code on confirm ─────────────────────────────────
@@ -92,7 +99,10 @@ class SaleOrder(models.Model):
             pro.write({'state': 'sent'})
         # set sales‑order code if empty
         for order in valid:
-            if not order.code_salesorder:
+            if order.code_salesorder:
+                code = order.code_salesorder
+                order.write({'name': code})
+            else:
                 # P<L/E><YY>-0001…
                 ship = 'L' if order.shipping_type == 'local' else 'E'
                 today = fields.Date.context_today(order)

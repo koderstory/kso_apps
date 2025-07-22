@@ -1,0 +1,15 @@
+<odoo>
+  <data>
+    <!-- Category Import Module Management -->
+    <record model="ir.module.category" id="category_sales_order_approval">
+        <field name="name">Approval Sales Order</field>
+        <field name="description">Enable Sales Order Verification</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="group_sale_approval" model="res.groups">
+      <field name="name">Sales Order Approval</field>
+      <field name="category_id" ref="category_sales_order_approval"/>
+      <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+  </data>
+</odoo>
