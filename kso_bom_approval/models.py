@@ -5,7 +5,7 @@ class MrpBom(models.Model):
     _inherit = "mrp.bom"
 
     state = fields.Selection([
-        ('refused', 'Refused'),
+        ('cancelled', 'Cancelled'),
         ('draft', 'Draft'),
         ('to_approve', 'To Approve'),
         ('approved', 'Approved'),
@@ -18,8 +18,8 @@ class MrpBom(models.Model):
     def action_approve(self):
         self.write({'state': 'approved'})
 
-    def action_refuse(self):
-        self.write({'state': 'refused'})
+    def action_cancel(self):
+        self.write({'state': 'cancelled'})
 
     def write(self, vals):
         # Prevent any edits on approved BOMs

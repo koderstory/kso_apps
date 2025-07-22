@@ -7,6 +7,7 @@
     "author": "Your Name",
     "depends": ["mrp"],
     "data": [
+        'security.xml',
         "views.xml",
     ],
     "installable": True,

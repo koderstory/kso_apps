@@ -1,0 +1,15 @@
+<odoo>
+  <data>
+    <!-- Category Import Module Management -->
+    <record model="ir.module.category" id="category_bom_approval">
+        <field name="name">Approval BoM</field>
+        <field name="description">Enable BOM Approval</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="group_bom_approval" model="res.groups">
+      <field name="name">BoM Approval</field>
+      <field name="category_id" ref="category_bom_approval"/>
+      <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+  </data>
+</odoo>
