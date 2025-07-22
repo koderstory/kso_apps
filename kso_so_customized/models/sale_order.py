@@ -17,7 +17,7 @@ class SaleOrder(models.Model):
         required=True,
     )
 
-    # Add a new state after 'sent'
+    # ─── STATES ────────────────────────────────────────────────────────────────
     state = fields.Selection(
         selection_add=[('proforma', 'Pro Forma Invoice'), ('sale', 'Sales Order')],
         ondelete={'proforma': 'set default'},
@@ -25,60 +25,101 @@ class SaleOrder(models.Model):
         tracking=3,
     )
 
+    # ─── NEW CODE FIELDS ──────────────────────────────────────────────────────
+    code_quotation   = fields.Char(string="Quotation Code",    copy=False)
+    code_pi          = fields.Char(string="Pro Forma Code",    copy=False)
+    code_salesorder  = fields.Char(string="Sales Order Code",  copy=False)
+
+    # ─── QUOTATION: name + code on create ────────────────────────────────────
+    @api.model
+    def create(self, vals):
+        # only auto‑name & set code if no explicit name given
+        if not vals.get('name') or vals.get('name') in ('/', False, ''):
+            # compute SO<YY>-<00001…>
+            today = fields.Date.context_today(self)
+            date_obj = (
+                today if not isinstance(today, str)
+                else datetime.strptime(today, '%Y-%m-%d').date()
+            )
+            yy = date_obj.strftime('%y')
+            year_start = datetime(date_obj.year, 1, 1)
+            year_end   = year_start + relativedelta(years=1)
+            count = self.search_count([
+                ('create_date', '>=', year_start.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+                ('create_date', '<',  year_end.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+            ]) + 1
+            name = f"SO{yy}-{count:05d}"
+            vals.update({
+                'name': name,
+                'code_quotation': name,
+            })
+        return super().create(vals)
+
+    # ─── PRO FORMA: name + code when you click Pro Forma ──────────────────────
     def action_proforma(self):
         for order in self:
             partner_code = order.partner_id.partner_code
             if not partner_code:
                 raise UserError("Please set a Partner Code on the customer before generating Pro Forma.")
-            # parse creation date
-            create_dt = fields.Datetime.from_string(order.create_date)
-            # month window
-            month_start = create_dt.replace(day=1, hour=0, minute=0, second=0)
-            month_end = month_start + relativedelta(months=1)
-            # count existing proformas this month
+            # build PI-<CODE>-YYYYMM-0001…
+            dt = order.create_date or fields.Datetime.now()
+            dt = datetime.strptime(dt, DEFAULT_SERVER_DATETIME_FORMAT) if isinstance(dt, str) else dt
+            m_start = dt.replace(day=1, hour=0, minute=0, second=0)
+            m_end   = m_start + relativedelta(months=1)
             count = self.search_count([
                 ('id', '!=', order.id),
                 ('state', '=', 'proforma'),
-                ('create_date', '>=', month_start.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-                ('create_date', '<',  month_end.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+                ('create_date', '>=', m_start.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+                ('create_date', '<',  m_end.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
             ]) + 1
-            seq = f"{count:04d}"
-            date_str = create_dt.strftime('%Y%m')
-            proforma_name = f"PI-{partner_code}-{date_str}-{seq}"
-            order.write({
-                'name': proforma_name,
-                'state': 'proforma',
-            })
+            code = f"PI-{partner_code}-{dt.strftime('%Y%m')}-{count:04d}"
+            # write name+state, and code_pi only if not already set
+            vals = {'name': code, 'state': 'proforma'}
+            if not order.code_pi:
+                vals['code_pi'] = code
+            order.write(vals)
         return True
 
+    # ─── SALES ORDER: name + code on confirm ─────────────────────────────────
     def action_confirm(self):
-        # only allow confirm from 'sent' or 'proforma'
         valid = self.filtered(lambda o: o.state in ('sent', 'proforma'))
         invalid = (self - valid)
         if invalid:
             raise UserError("Some orders are not in a state requiring confirmation.")
-        # drop proforma → sent so super() will accept
-        proformas = valid.filtered(lambda o: o.state == 'proforma')
-        if proformas:
-            proformas.write({'state': 'sent'})
-        # assign custom name per year
+        # allow super() by moving proforma→sent
+        pro = valid.filtered(lambda o: o.state == 'proforma')
+        if pro:
+            pro.write({'state': 'sent'})
+        # set sales‑order code if empty
         for order in valid:
-            ship_code = 'L' if order.shipping_type == 'local' else 'E'
-            today = fields.Date.context_today(order)
-            yy = today.strftime('%y')
-            # year window
-            year_start = datetime.strptime(today.strftime('%Y-01-01 00:00:00'),
-                                           DEFAULT_SERVER_DATETIME_FORMAT)
-            year_end   = year_start + relativedelta(years=1)
-            # count prior sales this year
-            count = self.search_count([
-                ('id', '!=', order.id),
-                ('name', 'ilike', f"P{ship_code}{yy}-%"),
-                ('create_date', '>=', year_start.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-                ('create_date', '<',  year_end.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
-            ]) + 1
-            seq = f"{count:04d}"
-            sale_name = f"P{ship_code}{yy}-{seq}"
-            order.write({'name': sale_name})
-        # now run the normal confirmation
+            if not order.code_salesorder:
+                # P<L/E><YY>-0001…
+                ship = 'L' if order.shipping_type == 'local' else 'E'
+                today = fields.Date.context_today(order)
+                dobj = (
+                    today if not isinstance(today, str)
+                    else datetime.strptime(today, '%Y-%m-%d').date()
+                )
+                yy = dobj.strftime('%y')
+                y_start = datetime(dobj.year, 1, 1)
+                y_end   = y_start + relativedelta(years=1)
+                cnt = self.search_count([
+                    ('code_salesorder', '!=', False),
+                    ('create_date', '>=', y_start.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+                    ('create_date', '<',  y_end.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+                ]) + 1
+                code = f"P{ship}{yy}-{cnt:04d}"
+                order.write({
+                    'name': code,
+                    'code_salesorder': code,
+                })
         return super(SaleOrder, valid).action_confirm()
+
+    def write(self, vals):
+        # only check confirmed orders
+        confirmed = self.filtered(lambda o: o.state=='sale')
+        if confirmed:
+            locked = {'payment_term_id','shipping_type','order_line'} & set(vals)
+            if locked:
+                raise UserError(f"You cannot modify {', '.join(locked)} once the order is confirmed.")
+        return super().write(vals)

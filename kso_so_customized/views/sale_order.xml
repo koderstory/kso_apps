@@ -15,12 +15,12 @@
             widget="radio"
             options="{'horizontal': true}"
             class="o_inline"
-            />
+          />
         </xpath>
 
         <!-- REMOVE the Send by Email button completely -->
-        <xpath expr="//button[@name='action_quotation_send']" position="replace"/>
-        
+        <xpath expr="//button[@name='action_quotation_send']" position="replace" />
+
         <!-- Extend the statusbar by targeting the <field name="state"> in the header -->
         <xpath expr="//header/field[@name='state']" position="attributes">
           <attribute name="statusbar_visible">
@@ -59,6 +59,17 @@
           </attribute>
         </xpath>
 
+        <!-- locate the shipping_type field and insert your codes right after -->
+        <!-- Insert your codes right after the order_details group -->
+        <xpath expr="//group[@name='order_details']" position="after">
+          <group string="Stage Codes" colspan="2">
+            <field name="code_quotation" readonly="1" />
+            <field name="code_pi" readonly="1" />
+            <field name="code_salesorder" readonly="1" />
+          </group>
+        </xpath>
+
+       
       </field>
     </record>
 
