@@ -2,7 +2,7 @@
     'name': 'Sales Order Process Customized',
     'version': '1.0',
     'category': 'Sales',
-    'depends': ['sale'],
+    'depends': ['sale_management', 'kso_partner_code',],
     'data': [
         'views/sale_order.xml',
     ],
