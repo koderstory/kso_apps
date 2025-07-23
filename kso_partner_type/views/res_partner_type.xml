@@ -8,7 +8,9 @@
       <field name="model">res.partner</field>
       <field name="inherit_id" ref="base.view_partner_form"/>
       <field name="arch" type="xml">
-        <xpath expr="//page[@name='sales_purchases']/group[@name='container_row_2']/group[@name='purchase']" position="after">
+        <xpath
+    expr="//page[@name='sales_purchases']/group[@name='container_row_2']/group[@name='purchase']"
+    position="after">
           <group string="Partner Flags">
             <field name="is_customer"/>
             <field name="is_vendor"/>
@@ -22,10 +24,11 @@
       <!-- replace (or merge with) its existing domain -->
       <field name="domain">[('customer_rank','>=',1),('active','=',True)]</field>
       <!-- push a default search filter -->
-      <field name="context">{'default_is_customer': True, 'default_customer_rank': 1, 'search_default_customer': 1}</field>
+      <field name="context">{'default_is_customer': True, 'default_customer_rank': 1,
+        'search_default_customer': 1}</field>
       <!-- you can also tweak limit, filter-checkbox, etc. -->
-      <field name="limit" eval="80"/>
-      <field name="filter" eval="True"/>
+      <field name="limit" eval="80" />
+      <field name="filter" eval="True" />
     </record>
 
     <!-- 3) Set Domain in Action -->
@@ -33,11 +36,30 @@
       <!-- replace (or merge with) its existing domain -->
       <field name="domain">[('supplier_rank','>=',1),('active','=',True)]</field>
       <!-- push a default search filter -->
-      <field name="context">{'default_is_company': True, 'default_supplier_rank': 1, 'search_default_supplier': 1, 'res_partner_search_mode': 'supplier',}</field>
+      <field name="context">{'default_is_company': True, 'default_supplier_rank': 1,
+        'search_default_supplier': 1, 'res_partner_search_mode': 'supplier',}</field>
       <!-- you can also tweak limit, filter-checkbox, etc. -->
-      <field name="limit" eval="80"/>
-      <field name="filter" eval="True"/>
+      <field name="limit" eval="80" />
+      <field name="filter" eval="True" />
     </record>
+
+    <!-- In purchase line, only show vendor contact -->
+    <record id="view_product_supplierinfo_tree_view2_domain" model="ir.ui.view">
+      <field name="name">product.supplierinfo.tree.view2.partner_domain</field>
+      <field name="model">product.supplierinfo</field>
+      <!-- Inherit the second supplierinfo tree used by seller_ids -->
+      <field name="inherit_id" ref="purchase.product_supplierinfo_tree_view2" />
+      <field name="arch" type="xml">
+        <!-- Find the Vendor column and inject your domain/context -->
+        <xpath expr="//field[@name='partner_id']" position="attributes">
+          <!-- only active suppliers -->
+          <attribute name="domain">[('supplier_rank','&gt;=',1),('active','=',True)]</attribute>
+          <!-- no “Create” in the dropdown -->
+          <attribute name="context">{'no_create': True}</attribute>
+        </xpath>
+      </field>
+    </record>
+
 
   </data>
 </odoo>

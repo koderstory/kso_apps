@@ -5,7 +5,7 @@
     "summary": "Add Customer and Vendor check-boxes to partners",
     "category": "Custom",
     "author": "Your Name",
-    "depends": ["base", "account"],
+    "depends": ["base", "account", 'purchase'],
     "data": [
         "views/res_partner_type.xml",
         # "views/res_partner_kanban_customer_filter.xml",
