@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+
+    <!-- Override the core Purchase Order sequence -->
+    <record id="purchase.seq_purchase_order" model="ir.sequence">
+      <field name="name">Purchase Order</field>
+      <field name="code">purchase.order</field>
+      <field name="implementation">standard</field>
+      <field name="prefix">PO/%(year)s/%(month)s/</field>
+      <field name="suffix"></field>
+      <field name="padding">5</field>
+      <field name="use_date_range">False</field>
+      <field name="number_next">1</field>
+      <field name="active">True</field>
+    </record>
+
+  </data>
+</odoo>

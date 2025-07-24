@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inherit the Manufacturing Order form view -->
+        <record id="view_mrp_production_form_inherit_hide_produce" model="ir.ui.view">
+            <field name="name">mrp.production.form.hide.produce</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_form_view" />
+            <field name="arch" type="xml">
+
+                <!-- 1) Remove all built-in Produce All buttons -->
+                <xpath
+                    expr='//button[@name="button_mark_done" and @invisible="not move_raw_ids or not show_produce_all"]'
+                    position="replace" />
+
+                <!-- 2) Inject one Produce All button, only visible in In Progress -->
+                <xpath expr="//header" position="inside">
+                    <button
+                        name="button_mark_done"
+                        type="object"
+                        string="Produce All"
+                        class="oe_highlight"
+                        data-hotkey="g"
+                        icon="fa-cubes"
+                        invisible="state != 'progress'" />
+                </xpath>
+
+                <xpath expr="//button[@name='action_start']" position="replace">
+                    <button name="action_start" type="object" string="Start" invisible="state != 'confirmed'" icon="fa-play" class="oe_highlight"/>
+                </xpath>
+
+                <xpath expr="//button[@name='button_plan']" position="replace">
+                    <button name="button_plan" invisible="state not in ('confirmed', 'progress', 'to_close') or not workorder_ids or is_planned" icon="fa-calendar" type="object" string="Plan" class="oe_highlight" data-hotkey="z"/>
+                </xpath>
+
+                
+
+
+            </field>
+        </record>
+    </data>
+</odoo>
