@@ -53,7 +53,7 @@
             type="object"
             string="Approve PI"
             class="btn-primary"
-            groups="kso_so_customized.group_sale_approval"
+            groups="kso_sale_customized.group_sale_approval"
             invisible="state != 'proforma'"/>
         </xpath>
 

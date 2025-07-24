@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 from . import data
-from . import hooks
+from .hooks import post_init_sequences
