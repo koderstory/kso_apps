@@ -475,7 +475,61 @@ def add_or_update_product_with_variants(env, product_data):
             _logger.info("Created single variant for template: %s", template_name)
         if not variants:
             update_variant_stock_quantity(env, product_tmpl.product_variant_ids[0], template_data.get('stock quantity'))
+        
+        # SET SUPPLIER IF EXIST
+        # Only add supplier info if the product is marked purchasable
+        if not template_data.get('is purchasable', True):
+            _logger.info("Product '%s' is not purchasable; skipping supplier info.", template_name)
+        else:
+            # —— Supplier info —— #
+            supplier_name = str(template_data.get('supplier') or '').strip()
+            if supplier_name:
+                # Find an existing partner who is a supplier
+                vendor = env['res.partner'].search([
+                    ('name', '=', supplier_name),
+                    ('supplier_rank', '>', 0)
+                ], limit=1)
+                if not vendor:
+                    _logger.warning(
+                        "Supplier '%s' not found; skipping purchase info for %s",
+                        supplier_name, template_name
+                    )
+                else:
+                    # Reuse the UoM you already looked up
+                    uom_id = get_or_create_uom(env, uom_value)
+                    cost_cell = template_data.get('cost price')
+                    price = float(cost_cell)
+
+                    # Search on partner_id instead of name
+                    info = env['product.supplierinfo'].search([
+                        ('partner_id', '=', vendor.id),
+                        ('product_tmpl_id', '=', product_tmpl.id),
+                        ('product_uom', '=', uom_id),
+                    ], limit=1)
+
+                    vals_si = {
+                        'partner_id':      vendor.id,
+                        'product_tmpl_id': product_tmpl.id,
+                        'product_uom':     uom_id,
+                        'min_qty':         1,
+                        'price':           price,
+                    }
+                    if info:
+                        info.write(vals_si)
+                        _logger.info(
+                            "Updated supplierinfo for %s from %s",
+                            template_name, supplier_name
+                        )
+                    else:
+                        env['product.supplierinfo'].create(vals_si)
+                        _logger.info(
+                            "Created supplierinfo for %s with %s",
+                            template_name, supplier_name
+                        )
+
+        # Finally, commit everything
         env.cr.commit()
+
 
         product_tmpl = env['product.template'].browse(product_tmpl.id)
         has_variant_data = any((v.get('variant') or '').strip() for v in all_variant_data)
