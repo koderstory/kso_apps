@@ -8,6 +8,6 @@
         'views/sale_order.xml',
     ],
     'installable': True,
-    'application': False,
+    'application': True,
     'auto_install': True,
 }
