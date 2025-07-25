@@ -195,6 +195,8 @@ def create_variant_manual(env, template, product, attribute_values):
 
     # Process the sale price if provided.
     sale_price = product.get('sale price')
+    if not sale_price:
+        raise UserError(_("No sale price provided for  %s") % product.get('name'))
     if sale_price:
         try:
             sale_price_val = float(sale_price)
@@ -208,6 +210,8 @@ def create_variant_manual(env, template, product, attribute_values):
 
     # Process the cost price.
     cost_price = product.get('cost price')
+    if not cost_price:
+        raise UserError(_("No cost price provided for  %s") % product.get('name'))
     if cost_price:
         try:
             cost_price_val = float(cost_price)
@@ -377,8 +381,35 @@ def add_or_update_product_with_variants(env, product_data):
             'tracking': tracking_val,
             'lot_valuated': lot_valuated,
         }
+        
+        # —— cost price —— #
+        cost_cell = template_data.get('cost price')
+        if cost_cell is None or str(cost_cell).strip() == '':
+            raise UserError(_(
+                "Missing required field ‘cost price’ for product ‘%s’."
+            ) % template_name)
+        try:
+            vals['standard_price'] = float(cost_cell)
+        except ValueError:
+            raise UserError(_(
+                "Invalid value in ‘cost price’ for product ‘%s’: ‘%s’ is not a number."
+            ) % (template_name, cost_cell))
+
+        # —— sale price —— #
         if not variants:
-            vals['list_price'] = float(template_data.get('sale price', 0))
+            sale_cell = template_data.get('sale price')
+            if sale_cell is None or str(sale_cell).strip() == '':
+                raise UserError(_(
+                    "Missing required field ‘sale price’ for product ‘%s’."
+                ) % template_name)
+            try:
+                vals['list_price'] = float(sale_cell)
+            except ValueError:
+                raise UserError(_(
+                    "Invalid value in ‘sale price’ for product ‘%s’: ‘%s’ is not a number."
+                ) % (template_name, sale_cell))
+
+
         if not product_tmpl:
             product_tmpl = env['product.template'].create(vals)
             _logger.info("Created product template: %s", template_name)
