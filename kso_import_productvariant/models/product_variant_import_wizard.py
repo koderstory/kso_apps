@@ -85,7 +85,7 @@ class ProductVariantImportWizard(models.TransientModel):
         
         This method returns an action that directs the user to the URL of
         the static template file. Ensure the file is located at:
-            static/description/PRODUCTS_VARIANTS.xlsx
+            static/description/DEMO_DATA.xlsx
         
         :return: An action of type 'ir.actions.act_url' to download the template.
         """
@@ -94,6 +94,6 @@ class ProductVariantImportWizard(models.TransientModel):
         return {
             'type': 'ir.actions.act_url',
             # Concatenate the base URL with your relative static file path.
-            'url': base_url + '/kso_import_productvariant/static/description/PRODUCTS_VARIANTS.xlsx?download=true',
+            'url': base_url + '/kso_import_productvariant/static/description/DEMO_DATA.xlsx?download=true',
             'target': 'self',
         }
