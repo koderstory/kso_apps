@@ -351,10 +351,25 @@ def add_or_update_product_with_variants(env, product_data):
     # Process each grouped template and its variants.
     for template_name, data in templates_and_variants.items():
         template_data = data['template_data']
+        product_code = str(template_data.get('product code') or '').strip()
         variants = data['variants']
         if template_data.get('variant'):
             variants.insert(0, template_data)
-        product_tmpl = env['product.template'].search([('name', '=ilike', template_name)], limit=1)
+        # product_tmpl = env['product.template'].search([('name', '=ilike', template_name)], limit=1)
+        
+        # 1) If a code was supplied, try to find that exact product.product
+        product_tmpl = None
+        if product_code:
+            prod = env['product.product'].search([('default_code','=',product_code)], limit=1)
+            if prod:
+                product_tmpl = prod.product_tmpl_id
+            else:
+                _logger.warning("Product code '%s' not found — will create new template.", product_code)
+        
+        # 2) Fallback: search by name
+        if not product_tmpl:
+            product_tmpl = env['product.template'].search([('name', '=ilike', template_name)], limit=1)
+        
         
         # Process UoM and product type fields.
         uom_value = (template_data.get('uom') or 'Unit').strip()
@@ -371,6 +386,7 @@ def add_or_update_product_with_variants(env, product_data):
         vals = {
             'name': template_name,
             'type': template_data.get('type', 'consu'),
+            'default_code': product_code, 
             'standard_price': float(template_data.get('cost price', 0)),
             'uom_id': get_or_create_uom(env, uom_value),
             'uom_po_id': get_or_create_uom(env, purchase_uom_value),
@@ -410,10 +426,13 @@ def add_or_update_product_with_variants(env, product_data):
                 ) % (template_name, sale_cell))
 
 
+        # 3) Create if still not found and no valid code pointed to an existing record
         if not product_tmpl:
             product_tmpl = env['product.template'].create(vals)
             _logger.info("Created product template: %s", template_name)
         else:
+            if product_code and prod:
+                _logger.info("Found existing product via code '%s'; skipping template creation.",product_code)
             if product_tmpl.product_variant_count > 1:
                 vals.pop('list_price', None)
             product_tmpl.write(vals)
