@@ -36,10 +36,6 @@
                     <button string="Import" type="object" name="action_import_productvariant" class="btn-primary" />
                     <button string="Cancel" special="cancel" class="btn-secondary" />
                     <!-- Plain HTML link for downloading the template -->
-
-                    
-
-
                 </footer>
             </form>
         </field>

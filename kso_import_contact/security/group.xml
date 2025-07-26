@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Product Variant Import Module Management -->
+    <record model="ir.module.category" id="contact_import_management">
+        <field name="name">Import Contact</field>
+        <field name="description">Enable to import contacts through wizard</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="contact_import_access_group" model="res.groups">
+        <field name="name">Contact Import Manager</field>
+        <field name="category_id" ref="contact_import_management"/>
+        <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>
