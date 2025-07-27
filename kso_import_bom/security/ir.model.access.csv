@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_bom_import_wizard,bom.import.wizard,kso_import_bom.model_bom_import_wizard,kso_import_bom.bom_import_manager,1,1,1,1

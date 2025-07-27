@@ -1,0 +1,58 @@
+<odoo>
+  <!-- Wizard form view -->
+  <record id="view_bom_import_wizard_form" model="ir.ui.view">
+    <field name="name">bom.import.wizard.form</field>
+    <field name="model">bom.import.wizard</field>
+    <field name="arch" type="xml">
+      <form string="Import BoM from Excel" create="false" edit="false">
+        <group>
+          <field name="file" filename="filename"/>
+        </group>
+        <group>
+          <a style="margin-top:10px; display:inline-flex; align-items:center;"
+             href="/kso_import_bom/static/description/BOM_TEMPLATE.xlsx?download=true"
+             target="_blank">
+            <!-- (Tabler) download icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+              <path d="M12 18v-12"/>
+              <path d="M8 14l4 4l4-4"/>
+              <path d="M4 18h16"/>
+            </svg>
+            <span style="margin-left:4px;">Download Template</span>
+          </a>
+        </group>
+        <footer>
+          <button name="action_import_bom"
+                  string="Import"
+                  type="object"
+                  class="btn-primary"/>
+          <button string="Cancel"
+                  special="cancel"/>
+        </footer>
+      </form>
+    </field>
+  </record>
+
+  <!-- Wizard action -->
+  <record id="action_bom_import_wizard" model="ir.actions.act_window">
+    <field name="name">Import BoM</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">bom.import.wizard</field>
+    <field name="view_mode">form</field>
+    <field name="target">new</field>
+  </record>
+
+  <!-- Menu in Manufacturing → Configuration -->
+  <menuitem id="menu_bom_import_root"
+            name="Import Tools"
+            parent="mrp.menu_mrp_configuration"
+            sequence="100"/>
+  <menuitem id="menu_bom_import"
+            name="Import BoM"
+            parent="menu_bom_import_root"
+            action="action_bom_import_wizard"
+            sequence="10"/>
+</odoo>

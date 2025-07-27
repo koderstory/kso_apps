@@ -1,0 +1,15 @@
+<odoo>
+  <!-- Module category -->
+  <record id="bom_import_management" model="ir.module.category">
+    <field name="name">BoM Import</field>
+    <field name="description">Manage BoM Import Wizard</field>
+    <field name="sequence">10</field>
+  </record>
+
+  <!-- Access group -->
+  <record id="bom_import_manager" model="res.groups">
+    <field name="name">BoM Import Manager</field>
+    <field name="category_id" ref="bom_import_management"/>
+    <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+  </record>
+</odoo>
