@@ -114,6 +114,7 @@ class BomImportWizard(models.TransientModel):
         # 7) Create component lines
         imported = skipped = failed = 0
         errors = []
+        Uom = self.env['uom.uom']
         for comp in comps:
             code = comp['code']
             if not code:
@@ -128,11 +129,25 @@ class BomImportWizard(models.TransientModel):
                         'name':         comp['name'],
                         'default_code': code,
                     })
+
+                # 1) Determine line_uom_id
+                if comp.get('uom'):
+                    # try to find a UoM by name or by lookup
+                    u = Uom.search([('name','=', comp['uom'])], limit=1)
+                    if not u:
+                        raise UserError(_("Unknown UoM “%s” for component %s") %
+                                        (comp['uom'], code))
+                    line_uom_id = u.id
+                else:
+                    # fallback to the product’s own UoM
+                    line_uom_id = cprod.uom_id.id
+
+                # 2) Create line
                 self.env['mrp.bom.line'].create({
                     'bom_id':        bom.id,
                     'product_id':    cprod.id,
                     'product_qty':   comp['qty'],
-                    'product_uom_id': cprod.uom_id.id,
+                    'product_uom_id': line_uom_id,
                 })
                 imported += 1
             except Exception as e:
