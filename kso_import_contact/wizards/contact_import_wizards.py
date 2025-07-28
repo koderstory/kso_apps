@@ -56,6 +56,7 @@ class ContactImportWizard(models.TransientModel):
             # Prepare values (always set ranks)
             vals = {
                 'name': name,
+                'partner_code': code,
                 'street': data.get('address'),
                 'phone': data.get('phone'),
                 'mobile': data.get('mobile'),
@@ -64,15 +65,16 @@ class ContactImportWizard(models.TransientModel):
                 'supplier_rank': 1 if is_vendor else 0,
                 'customer_rank': 1 if is_customer else 0,
             }
-            if code:
-                vals['ref'] = code
+            # if code:
+            #     vals['ref'] = code
 
             # Build search domain, excluding system users
             domain = [('user_ids', '=', False)]
-            if code:
-                domain.append(('ref', '=', code))
-            else:
-                domain.append(('name', '=', name))
+            # if code:
+            #     domain.append(('partner_code', '=', code))
+            # else:
+            #     domain.append(('name', '=', name))
+            domain.append(('name', '=', name))
 
             partner = self.env['res.partner'].search(domain, limit=1)
             if partner:

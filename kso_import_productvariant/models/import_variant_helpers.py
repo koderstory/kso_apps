@@ -35,6 +35,37 @@ def get_or_create_uom(env, uom_name):
         raise UserError(_("Unit of Measure '%s' not found.") % uom_name)
     return uom.id
 
+def get_or_create_category(env, category_path):
+    """
+    Retrieve or create a product.category record given a slash-delimited path,
+    without falling back to the 'All' root.
+
+    :param env: The current Odoo environment.
+    :param category_path: String like "Parent / Child / Grandchild".
+    :return: The ID of the deepest category record.
+    """
+    if not category_path:
+        return None
+
+    names = [n.strip() for n in category_path.split('/') if n.strip()]
+    parent = None
+    for name in names:
+        # parent_id = None for the top‐level, or the previous category's ID
+        parent_id = parent.id if parent else False
+        cat = env['product.category'].search([
+            ('name', '=ilike', name),
+            ('parent_id', '=', parent_id),
+        ], limit=1)
+        if not cat:
+            # by always including parent_id (even False), we override default_get()
+            cat = env['product.category'].create({
+                'name': name,
+                'parent_id': parent_id,
+            })
+        parent = cat
+    return parent.id
+
+
 
 def get_or_create_template_attribute_value(env, template, attribute, attr_val):
     """
@@ -397,6 +428,10 @@ def add_or_update_product_with_variants(env, product_data):
             'tracking': tracking_val,
             'lot_valuated': lot_valuated,
         }
+
+        category_name = (template_data.get('category') or '').strip()
+        if category_name:
+            vals['categ_id'] = get_or_create_category(env, category_name)
         
         # —— cost price —— #
         cost_cell = template_data.get('cost price')
