@@ -13,6 +13,11 @@ class ProductTemplate(models.Model):
 
     @api.model
     def write(self, vals):
+
+        # if we’re *only* resetting state from Approved → Draft, allow it
+        if vals.get('state') == 'draft':
+            return super().write(vals)
+
         # Allow only reverting the state back to draft
         for rec in self:
             if rec.state == 'approved':
@@ -93,6 +98,16 @@ class ProductTemplate(models.Model):
                     "Please upload at least one image on the General Information tab."
                 ) % rec.display_name)
 
+            # BOM approval check
+            if rec.sale_ok:
+                boms = self.env['mrp.bom'].search_count([
+                    ('product_tmpl_id', '=', rec.id),
+                    ('state', '=', 'approved')])
+                if not boms:
+                    raise UserError(_(
+                        "Cannot approve '%s': at least one Approved BoM required."
+                    ) % rec.display_name)
+
             rec.state = 'approved'
 
     def action_draft(self):
@@ -115,6 +130,11 @@ class Product(models.Model):
 
     @api.model
     def write(self, vals):
+
+        # if we’re *only* resetting state from Approved → Draft, allow it
+        if vals.get('state') == 'draft':
+            return super().write(vals)
+
         for rec in self:
             if rec.state == 'approved':
                 if not (set(vals.keys()) == {'state'} and vals.get('state') == 'draft'):

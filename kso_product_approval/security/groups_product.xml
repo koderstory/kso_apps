@@ -10,13 +10,13 @@
   <record id="group_product_approval" model="res.groups">
     <field name="name">Product Manager</field>
     <field name="category_id" ref="category_product_approval"/>
-    <field name="users" eval="[(4, ref('base.user_root'))]"/>
+    <field name="users" eval="[(4, ref('base.user_admin'))]"/>
   </record>
 
   <!-- Who can Source (move to Process stage)? -->
   <record id="group_product_staff" model="res.groups">
     <field name="name">Product Staff</field>
     <field name="category_id" ref="category_product_approval"/>
-    <field name="users" eval="[(4, ref('base.user_root'))]"/>
+    <field name="users" eval="[(4, ref('base.user_admin'))]"/>
   </record>
 </odoo>

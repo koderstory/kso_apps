@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="view_bom_form_header_inline" model="ir.ui.view">
+      <field name="name">mrp.bom.form.header.inline</field>
+      <field name="model">mrp.bom</field>
+      <field name="inherit_id" ref="mrp.mrp_bom_form_view" />
+      <field name="arch" type="xml">
+
+        <!-- Inject our header right before the sheet -->
+        <xpath expr="//form/sheet" position="before">
+          <header>
+            <button
+              name="action_submit"
+              string="Request Approval"
+              type="object"
+              class="btn-primary"
+              invisible="state != 'draft'"
+            />
+            <button
+              name="action_approve"
+              string="Approve"
+              type="object"
+              class="btn-success"
+              groups="kso_product_approval.group_bom_approval"
+              invisible="state != 'to_approve'" />
+            <button
+              name="action_cancel"
+              string="Cancel"
+              type="object"
+              class="btn-secondary"
+               invisible="state != 'to_approve'"/>
+            <field
+              name="state"
+              widget="statusbar"
+              statusbar_visible="draft,to_approve,approved" />
+          </header>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
