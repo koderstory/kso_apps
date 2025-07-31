@@ -1,15 +1,22 @@
 <odoo>
-
-  <!-- Category Import Module Management -->
-  <record model="ir.module.category" id="category_product_approval">
+  <!-- Category to group our security records -->
+  <record id="category_product_approval" model="ir.module.category">
     <field name="name">Product Approval</field>
-    <field name="description">Enable to Approve Product</field>
+    <field name="description">Enable to Approve or Source Products</field>
     <field name="sequence">10</field>
   </record>
 
+  <!-- Who can Approve? -->
   <record id="group_product_approval" model="res.groups">
     <field name="name">Product Manager</field>
-    <field name="category_id" ref="category_product_approval" />
-    <field name="users" eval="[(4, ref('base.user_root'))]" />
+    <field name="category_id" ref="category_product_approval"/>
+    <field name="users" eval="[(4, ref('base.user_root'))]"/>
+  </record>
+
+  <!-- Who can Source (move to Sourcing stage)? -->
+  <record id="group_product_sourcing" model="res.groups">
+    <field name="name">Product Sourcing</field>
+    <field name="category_id" ref="category_product_approval"/>
+    <field name="users" eval="[(4, ref('base.user_root'))]"/>
   </record>
 </odoo>

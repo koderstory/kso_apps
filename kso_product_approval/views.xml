@@ -1,42 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
   <data>
-    <!-- Template Form -->
+    <!-- product.template form header -->
     <record id="product_template_form_inherit" model="ir.ui.view">
       <field name="name">kso.product.template.form.approval</field>
       <field name="model">product.template</field>
       <field name="inherit_id" ref="product.product_template_only_form_view" />
       <field name="arch" type="xml">
         <xpath expr="//header" position="inside">
-          <button name="action_verify" string="Approve"
-            type="object" class="btn-primary"
-            invisible="state=='approved'"
-            groups="kso_product_approval.group_product_approval" />
-          <button name="action_draft" string="Set to Draft"
-            type="object" class="btn-secondary"
-            invisible="state!='approved'"
-            groups="kso_product_approval.group_product_approval" />
+
+          <!-- Draft → Sourcing -->
+          <button name="action_source"
+            string="Send to Sourcing"
+            type="object"
+            class="btn-secondary"
+            groups="kso_product_approval.group_product_sourcing"
+            invisible="state!='draft'" />
+
+          <!-- Sourcing → Approved -->
+          <button name="action_verify"
+            string="Approve"
+            type="object"
+            class="btn-primary"
+            groups="kso_product_approval.group_product_approval"
+            invisible="state!='sourcing'" />
+
+          <!-- Reset to Draft -->
+          <button name="action_draft"
+            string="Set to Draft"
+            type="object"
+            class="btn-tertiary"
+            groups="kso_product_approval.group_product_approval,kso_product_approval.group_product_sourcing"
+            invisible="state=='draft'" />
+
           <field name="state" widget="statusbar" />
+
         </xpath>
       </field>
     </record>
 
-    <!-- Variant Form -->
+    <!-- product.product form header -->
     <record id="product_product_form_inherit" model="ir.ui.view">
       <field name="name">kso.product.product.form.approval</field>
       <field name="model">product.product</field>
       <field name="inherit_id" ref="product.product_normal_form_view" />
       <field name="arch" type="xml">
         <xpath expr="//header" position="inside">
-          <button name="action_verify" string="Approve"
-            type="object" class="btn-primary"
-            invisible="state=='approved'"
-            groups="kso_product_approval.group_product_approval" />
-          <button name="action_draft" string="Set to Draft"
-            type="object" class="btn-secondary"
-            invisible="state!='approved'"
-            groups="kso_product_approval.group_product_approval" />
+
+          <button name="action_source"
+            string="Send to Sourcing"
+            type="object"
+            class="btn-primary"
+            groups="kso_product_approval.group_product_sourcing"
+            invisible="state!='draft'" />
+
+          <button name="action_verify"
+            string="Approve"
+            type="object"
+            class="btn-primary"
+            groups="kso_product_approval.group_product_approval"
+            invisible="state!='sourcing'" />
+
+          <button name="action_draft"
+            string="Set to Draft"
+            type="object"
+            class="btn-tertiary"
+            groups="kso_product_approval.group_product_approval,kso_product_approval.group_product_sourcing"
+            invisible="state=='draft'" />
+
           <field name="state" widget="statusbar" />
+
         </xpath>
       </field>
     </record>
