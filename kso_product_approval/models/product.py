@@ -63,7 +63,6 @@ class ProductTemplate(models.Model):
 
             # **new**: purchase route check
             if rec.purchase_ok:
-                # code = rec.route_ids.filtered(lambda r: r.name == 'Buy')
                 required = {'Buy', 'Replenish on Order (MTO)'}
                 route_names = set(rec.route_ids.mapped('name'))
                 missing = required - route_names
@@ -74,6 +73,25 @@ class ProductTemplate(models.Model):
                         rec.display_name,
                         "\n• ".join(missing)
                     ))
+
+             # sales route check
+            if rec.sale_ok:
+                required = {'Manufacture', 'Replenish on Order (MTO)'}
+                route_names = set(rec.route_ids.mapped('name'))
+                missing = required - route_names
+                if missing:
+                    raise UserError(_(
+                        "Cannot approve '%s': You must enable the following routes under Inventory → Operations:\n• %s"
+                    ) % (
+                        rec.display_name,
+                        "\n• ".join(missing)
+                    ))
+
+            if rec.sale_ok and not rec.image_1920:
+                raise UserError(_(
+                    "Cannot approve '%s': No product image set. "
+                    "Please upload at least one image on the General Information tab."
+                ) % rec.display_name)
 
             rec.state = 'approved'
 
