@@ -19,6 +19,6 @@ Only members of “Product Sourcing” can move Draft→Sourcing, and only “Pr
     ],
     'demo': [],
     'installable': True,
-    'application': False,
+    'application': True,
     'auto_install': True,
 }

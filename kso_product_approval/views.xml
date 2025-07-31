@@ -9,28 +9,28 @@
       <field name="arch" type="xml">
         <xpath expr="//header" position="inside">
 
-          <!-- Draft → Sourcing -->
-          <button name="action_source"
-            string="Send to Sourcing"
+          <!-- Draft → Progress -->
+          <button name="action_progress"
+            string="In Progress"
             type="object"
-            class="btn-secondary"
-            groups="kso_product_approval.group_product_sourcing"
+            class="btn-primary"
+            groups="kso_product_approval.group_product_staff"
             invisible="state!='draft'" />
 
-          <!-- Sourcing → Approved -->
+          <!-- Progress → Approved -->
           <button name="action_verify"
             string="Approve"
             type="object"
             class="btn-primary"
             groups="kso_product_approval.group_product_approval"
-            invisible="state!='sourcing'" />
+            invisible="state!='progress'" />
 
           <!-- Reset to Draft -->
           <button name="action_draft"
             string="Set to Draft"
             type="object"
             class="btn-tertiary"
-            groups="kso_product_approval.group_product_approval,kso_product_approval.group_product_sourcing"
+            groups="kso_product_approval.group_product_approval,kso_product_approval.group_product_staff"
             invisible="state=='draft'" />
 
           <field name="state" widget="statusbar" />
@@ -47,11 +47,11 @@
       <field name="arch" type="xml">
         <xpath expr="//header" position="inside">
 
-          <button name="action_source"
-            string="Send to Sourcing"
+          <button name="action_progress"
+            string="In Progress"
             type="object"
             class="btn-primary"
-            groups="kso_product_approval.group_product_sourcing"
+            groups="kso_product_approval.group_product_staff"
             invisible="state!='draft'" />
 
           <button name="action_verify"
@@ -59,13 +59,13 @@
             type="object"
             class="btn-primary"
             groups="kso_product_approval.group_product_approval"
-            invisible="state!='sourcing'" />
+            invisible="state!='progress'" />
 
           <button name="action_draft"
             string="Set to Draft"
             type="object"
             class="btn-tertiary"
-            groups="kso_product_approval.group_product_approval,kso_product_approval.group_product_sourcing"
+            groups="kso_product_approval.group_product_approval,kso_product_approval.group_product_staff"
             invisible="state=='draft'" />
 
           <field name="state" widget="statusbar" />

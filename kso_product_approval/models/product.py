@@ -7,22 +7,22 @@ class ProductTemplate(models.Model):
 
     state = fields.Selection([
         ('draft', 'Draft'),
-        ('sourcing', 'Sourcing'),
+        ('progress', 'Progress'),
         ('approved', 'Approved'),
     ], string="Approval Stage", default="draft", tracking=True)
 
-    def action_source(self):
-        """Move Draft → Sourcing (Product Sourcing only)"""
+    def action_progress(self):
+        """Move Draft → Progress (Product Progress only)"""
         for rec in self:
             if rec.state != 'draft':
-                raise UserError(_("Only Draft products can be sent to Sourcing."))
-            rec.state = 'sourcing'
+                raise UserError(_("Only Draft products can be sent to Progress."))
+            rec.state = 'progress'
 
     def action_verify(self):
-        """Move Sourcing → Approved (Product Manager only)"""
+        """Move Progress → Approved (Product Manager only)"""
         for rec in self:
-            if rec.state != 'sourcing':
-                raise UserError(_("Product must be in Sourcing stage first."))
+            if rec.state != 'progress':
+                raise UserError(_("Product must be in Progress stage first."))
             # existing validations:
             if rec.purchase_ok and not rec.standard_price:
                 raise UserError(_(
@@ -47,7 +47,7 @@ class ProductTemplate(models.Model):
 class Product(models.Model):
     _inherit = "product.product"
 
-    def action_source(self):
+    def action_progress(self):
         return self.product_tmpl_id.action_source()
 
     def action_verify(self):
