@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <!-- Template Form -->
+    <record id="product_template_form_inherit" model="ir.ui.view">
+      <field name="name">kso.product.template.form.approval</field>
+      <field name="model">product.template</field>
+      <field name="inherit_id" ref="product.product_template_only_form_view" />
+      <field name="arch" type="xml">
+        <xpath expr="//header" position="inside">
+          <button name="action_verify" string="Approve"
+            type="object" class="btn-primary"
+            invisible="state=='approved'"
+            groups="kso_product_approval.group_product_approval" />
+          <button name="action_draft" string="Set to Draft"
+            type="object" class="btn-secondary"
+            invisible="state!='approved'"
+            groups="kso_product_approval.group_product_approval" />
+          <field name="state" widget="statusbar" />
+        </xpath>
+      </field>
+    </record>
+
+    <!-- Variant Form -->
+    <record id="product_product_form_inherit" model="ir.ui.view">
+      <field name="name">kso.product.product.form.approval</field>
+      <field name="model">product.product</field>
+      <field name="inherit_id" ref="product.product_normal_form_view" />
+      <field name="arch" type="xml">
+        <xpath expr="//header" position="inside">
+          <button name="action_verify" string="Approve"
+            type="object" class="btn-primary"
+            invisible="state=='approved'"
+            groups="kso_product_approval.group_product_approval" />
+          <button name="action_draft" string="Set to Draft"
+            type="object" class="btn-secondary"
+            invisible="state!='approved'"
+            groups="kso_product_approval.group_product_approval" />
+          <field name="state" widget="statusbar" />
+        </xpath>
+      </field>
+    </record>
+
+    <!-- Tree Views -->
+    <record id="product_template_tree_inherit" model="ir.ui.view">
+      <field name="name">kso.product.template.tree.approval</field>
+      <field name="model">product.template</field>
+      <field name="inherit_id" ref="product.product_template_tree_view" />
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='uom_id']" position="after">
+          <button name="action_verify" string="Approve" type="object"
+            invisible="state=='approved'"
+            class="btn-secondary"
+            groups="kso_product_approval.group_product_approval" />
+          <field name="state" widget="badge"
+            decoration-danger="state=='draft'"
+            decoration-success="state=='approved'" />
+        </xpath>
+      </field>
+    </record>
+
+    <record id="product_product_tree_inherit" model="ir.ui.view">
+      <field name="name">kso.product.product.tree.approval</field>
+      <field name="model">product.product</field>
+      <field name="inherit_id" ref="product.product_product_tree_view" />
+      <field name="arch" type="xml">
+        <xpath expr="//field[@name='virtual_available']" position="after">
+          <button name="action_verify" string="Approve" type="object"
+            invisible="state=='approved'"
+            groups="kso_product_approval.group_product_approval" />
+          <field name="state" widget="badge"
+            decoration-danger="state=='draft'"
+            decoration-success="state=='approved'" />
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>

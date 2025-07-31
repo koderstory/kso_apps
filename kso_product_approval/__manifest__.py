@@ -1,0 +1,21 @@
+{
+    'name': 'kso_product_approval',
+    'summary': "Enforce product approval with a confirmation step showing key data.",
+    'version': '18.0.0.0.0',
+    'category': 'Product',
+    'website': 'http://www.koderstory.com/',
+    'description': """ """,
+    'author': 'koderstory',
+    'maintainer': 'koderstory',
+    'support': 'hello@koderstory.com',
+    'license': 'LGPL-3',
+    'depends': ['sale_management', 'purchase', 'stock'],
+    'data': [
+        'groups.xml',
+        'views.xml',
+    ],
+    'demo': [],
+    'installable': True,
+    'application': False,
+    'auto_install': True,
+}

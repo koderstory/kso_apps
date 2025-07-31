@@ -490,7 +490,7 @@ def add_or_update_product_with_variants(env, product_data):
                 if variant:
                     created_variants.append(variant)
                     variant_stock = variant_data.get('stock quantity')
-                    if variant_stock is not None:
+                    if variant_stock not in (None, ''):
                         try:
                             qty_value = float(variant_stock)
                         except Exception:
@@ -501,7 +501,7 @@ def add_or_update_product_with_variants(env, product_data):
             variant = env['product.product'].create({'product_tmpl_id': product_tmpl.id})
             created_variants.append(variant)
             template_stock = template_data.get('stock quantity')
-            if template_stock is not None:
+            if variant_stock not in (None, ''):
                 try:
                     qty_value = float(template_stock)
                 except Exception:
@@ -509,7 +509,13 @@ def add_or_update_product_with_variants(env, product_data):
                 update_variant_stock_quantity(env, variant, qty_value)
             _logger.info("Created single variant for template: %s", template_name)
         if not variants:
-            update_variant_stock_quantity(env, product_tmpl.product_variant_ids[0], template_data.get('stock quantity'))
+            template_stock = template_data.get('stock quantity')
+            if template_stock not in (None, ''):
+                try:
+                    qty_value = float(template_stock)
+                except Exception:
+                    qty_value = 0.0
+                update_variant_stock_quantity(env, product_tmpl.product_variant_ids[0], template_data.get('stock quantity'))
         
         # SET SUPPLIER IF EXIST
         # Only add supplier info if the product is marked purchasable
