@@ -35,7 +35,7 @@ class ProductTemplate(models.Model):
                 raise UserError(_(
                     "Approved product '%s' cannot be deleted."
                 ) % rec.display_name)
-        return super(ProductTemplate, self).unlink(*args, **kwargs)
+        return super(ProductTemplate, self).unlink()
 
     def action_progress(self):
         """Move Draft → Progress (Product Progress only)"""
@@ -150,4 +150,4 @@ class Product(models.Model):
                 raise UserError(_(
                     "Approved variant '%s' cannot be deleted."
                 ) % rec.display_name)
-        return super(Product, self).unlink(*args, **kwargs)
+        return super(Product, self).unlink()
