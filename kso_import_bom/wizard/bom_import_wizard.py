@@ -8,6 +8,29 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+
+def get_or_create_category(env, category_path):
+    """
+    Retrieve or create a product.category record given a slash-delimited path,
+    without falling back to the 'All' root.
+    """
+    if not category_path:
+        return False
+    parent = None
+    for name in [n.strip() for n in category_path.split('/') if n.strip()]:
+        parent_id = parent.id if parent else False
+        cat = env['product.category'].search([
+            ('name', '=ilike', name),
+            ('parent_id', '=', parent_id),
+        ], limit=1)
+        if not cat:
+            cat = env['product.category'].create({
+                'name':      name,
+                'parent_id': parent_id,
+            })
+        parent = cat
+    return parent.id
+
 class BomImportWizard(models.TransientModel):
     _name = 'bom.import.wizard'
     _description = 'BoM Import Wizard'
@@ -56,7 +79,7 @@ class BomImportWizard(models.TransientModel):
         idx += 1
 
         comp_map = {name: i for i, name in enumerate(comp_header)}
-        for col in ('component code', 'component name', 'qty'):
+        for col in ('component code', 'component name', 'category','qty'):
             if col not in comp_map:
                 raise UserError(_("Components header missing “%s” column.") % col)
 
@@ -67,6 +90,7 @@ class BomImportWizard(models.TransientModel):
             comps.append({
                 'code': row[comp_map['component code']],
                 'name': row[comp_map['component name']],
+                'category': row[comp_map['category']] or False,
                 'qty':  float(row[comp_map['qty']] or 0),
             })
             idx += 1
@@ -130,7 +154,14 @@ class BomImportWizard(models.TransientModel):
                         'default_code': code,
                     })
 
-                # 1) Determine line_uom_id
+                
+                # — assign category via your helper —
+                if comp.get('category'):
+                    cat_id = get_or_create_category(self.env, comp['category'])
+                    if cat_id:
+                        cprod.categ_id = cat_id
+
+                # Determine line_uom_id
                 if comp.get('uom'):
                     # try to find a UoM by name or by lookup
                     u = Uom.search([('name','=', comp['uom'])], limit=1)

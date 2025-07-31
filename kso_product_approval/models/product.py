@@ -28,14 +28,14 @@ class ProductTemplate(models.Model):
                     ) % rec.display_name)
         return super().write(vals)
 
-    @api.model
+    
     def unlink(self):
         for rec in self:
             if rec.state == 'approved':
                 raise UserError(_(
                     "Approved product '%s' cannot be deleted."
                 ) % rec.display_name)
-        return super().unlink()
+        return super(ProductTemplate, self).unlink(*args, **kwargs)
 
     def action_progress(self):
         """Move Draft → Progress (Product Progress only)"""
@@ -143,11 +143,11 @@ class Product(models.Model):
                     ) % rec.display_name)
         return super().write(vals)
 
-    @api.model
+    
     def unlink(self):
         for rec in self:
             if rec.state == 'approved':
                 raise UserError(_(
                     "Approved variant '%s' cannot be deleted."
                 ) % rec.display_name)
-        return super().unlink()
+        return super(Product, self).unlink(*args, **kwargs)
