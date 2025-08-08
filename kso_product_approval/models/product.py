@@ -14,6 +14,10 @@ class ProductTemplate(models.Model):
     @api.model
     def write(self, vals):
 
+        # allow PO-confirm operations to skip the lock
+        if self.env.context.get('skip_product_lock'):
+            return super().write(vals)
+
         # if we’re *only* resetting state from Approved → Draft, allow it
         if vals.get('state') == 'draft':
             return super().write(vals)
@@ -130,6 +134,9 @@ class Product(models.Model):
 
     @api.model
     def write(self, vals):
+
+        if self.env.context.get('skip_product_lock'):
+            return super().write(vals)
 
         # if we’re *only* resetting state from Approved → Draft, allow it
         if vals.get('state') == 'draft':

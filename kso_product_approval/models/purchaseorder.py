@@ -15,4 +15,4 @@ class PurchaseOrder(models.Model):
                     "These Products are Not Approved (%s). "
                     "Please Approve all Products before confirming Purchase Order."
                 ) % unapproved)
-        return super().button_confirm()
+        return super(PurchaseOrder, self.with_context(skip_product_lock=True)).button_confirm()
