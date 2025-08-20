@@ -1,33 +1,25 @@
 # -*- coding: utf-8 -*-
 """
-Helper functions for importing product variants from an Excel file.
+Odoo 18–compatible helpers for importing product templates & variants from Excel-like rows.
 
-This module defines functions that:
- - Retrieve or create records for units of measure (UoM).
- - Manage product attributes and their values.
- - Create or update product variants based on variant data.
- - Update stock quantities for variants.
- - Clean up unwanted (or duplicate) variants after import.
- - Process an entire Excel file's data to update product templates and variants.
+Key notes:
+- Uses stock.quants to set on-hand qty at an internal location (see get_default_internal_location()).
+- No custom fields (e.g., is_storable, lot_valuated, fix_price). Add back if they exist in your DB.
+- Disables auto variant creation via create_variant='no_variant'.
 """
 
 import logging
-
 from odoo import _
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
 
+# ---------------------------
+# Basic lookups / creations
+# ---------------------------
+
 def get_or_create_uom(env, uom_name):
-    """
-    Retrieve a Unit of Measure (UoM) ID by searching case-insensitively by name.
-    
-    :param env: The current Odoo environment.
-    :param uom_name: The name of the UoM.
-    :return: The ID of the UoM.
-    :raises UserError: If no matching UoM is found.
-    """
     if not uom_name:
         return None
     uom = env['uom.uom'].search([('name', '=ilike', uom_name)], limit=1)
@@ -35,133 +27,96 @@ def get_or_create_uom(env, uom_name):
         raise UserError(_("Unit of Measure '%s' not found.") % uom_name)
     return uom.id
 
-def get_or_create_category(env, category_path):
-    """
-    Retrieve or create a product.category record given a slash-delimited path,
-    without falling back to the 'All' root.
 
-    :param env: The current Odoo environment.
-    :param category_path: String like "Parent / Child / Grandchild".
-    :return: The ID of the deepest category record.
-    """
+def get_or_create_category(env, category_path):
     if not category_path:
         return None
-
     names = [n.strip() for n in category_path.split('/') if n.strip()]
     parent = None
     for name in names:
-        # parent_id = None for the top‐level, or the previous category's ID
         parent_id = parent.id if parent else False
         cat = env['product.category'].search([
             ('name', '=ilike', name),
             ('parent_id', '=', parent_id),
         ], limit=1)
         if not cat:
-            # by always including parent_id (even False), we override default_get()
-            cat = env['product.category'].create({
-                'name': name,
-                'parent_id': parent_id,
-            })
+            cat = env['product.category'].create({'name': name, 'parent_id': parent_id})
         parent = cat
     return parent.id
 
 
+# ---------------------------
+# Attributes & variants
+# ---------------------------
 
 def get_or_create_template_attribute_value(env, template, attribute, attr_val):
-    """
-    Retrieve or create the product.template.attribute.value record that links
-    a product template to an attribute value.
-    
-    :param env: The current Odoo environment.
-    :param template: The product.template record.
-    :param attribute: The product.attribute record.
-    :param attr_val: The product.attribute.value record.
-    :return: The product.template.attribute.value record.
-    """
-    tmpl_attr_val = env['product.template.attribute.value'].search([
+    ptav = env['product.template.attribute.value'].search([
         ('product_tmpl_id', '=', template.id),
         ('product_attribute_value_id', '=', attr_val.id)
     ], limit=1)
-    if not tmpl_attr_val:
-        tmpl_attr_val = env['product.template.attribute.value'].create({
+    if not ptav:
+        ptav = env['product.template.attribute.value'].create({
             'product_tmpl_id': template.id,
             'product_attribute_id': attribute.id,
             'product_attribute_value_id': attr_val.id,
         })
-    return tmpl_attr_val
+    return ptav
 
 
 def disable_variant_auto_creation(env, template):
-    """
-    Disable automatic variant creation for a product template.
-    
-    Based on available fields in the product.template model, this function
-    disables auto-creation so that manual variant creation can be enforced.
-    
-    :param env: The current Odoo environment.
-    :param template: The product.template record.
-    """
-    pt_fields = template._fields
-    if 'create_variant' in pt_fields:
+    # Modern Odoo: selection field 'create_variant' supports 'no_variant'
+    if 'create_variant' in template._fields:
         template.write({'create_variant': 'no_variant'})
-    elif 'create_variant_ids' in pt_fields:
-        template.write({'create_variant_ids': [(5, 0, 0)]})
     else:
-        _logger.warning("Could not determine how to disable automatic variant creation.")
+        _logger.warning("Template lacks 'create_variant' field; cannot disable auto variant creation.")
+
+
+def _attr_get_or_create(env, name):
+    rec = env['product.attribute'].search([('name', '=ilike', name)], limit=1)
+    return rec or env['product.attribute'].create({'name': name})
+
+
+def _attr_value_get_or_create(env, attribute, value):
+    rec = env['product.attribute.value'].search([
+        ('name', '=ilike', value),
+        ('attribute_id', '=', attribute.id)
+    ], limit=1)
+    return rec or env['product.attribute.value'].create({'name': value, 'attribute_id': attribute.id})
 
 
 def setup_template_attributes(env, template, all_variants):
     """
-    Setup attribute lines on a product template based on variant data.
-    
-    Parses variant strings to extract attribute names and values, creates
-    missing attributes or attribute values, and attaches them to the template.
-    
-    :param env: The current Odoo environment.
-    :param template: The product.template record.
-    :param all_variants: List of dictionaries containing variant data.
-    :return: A dictionary mapping attribute names to dictionaries of their values.
+    Build attribute lines from 'variant' strings like "Color:Red, Size:M".
+    Returns dict[attr_key_lower][value_key_lower] = product.attribute.value record
     """
-    attribute_values = {}
+    bucket = {}
     for product in all_variants:
-        variant_str = (product.get('variant') or '').strip()
-        if not variant_str:
+        vstr = (product.get('variant') or '').strip()
+        if not vstr:
             continue
-        # Expecting "attribute:value" pairs separated by commas.
-        for part in variant_str.split(','):
+        for part in vstr.split(','):
             if ':' in part:
-                attr_name, attr_value = part.split(':', 1)
-                attr_name = attr_name.strip().lower()
-                attr_value = attr_value.strip().lower()
-                if attr_name not in attribute_values:
-                    attribute_values[attr_name] = {}
-                if attr_value not in attribute_values[attr_name]:
-                    attribute_values[attr_name][attr_value] = None
+                a, v = part.split(':', 1)
+                a_key = a.strip().lower()
+                v_key = v.strip().lower()
+                bucket.setdefault(a_key, {})
+                # keep any display form we saw
+                bucket[a_key].setdefault(v_key, (a.strip(), v.strip()))
 
-    # For each attribute from the Excel data, search or create on the product template.
-    for attr_name, values in attribute_values.items():
-        attribute = env['product.attribute'].search([('name', '=ilike', attr_name)], limit=1)
-        if not attribute:
-            attribute = env['product.attribute'].create({'name': attr_name})
+    attr_map = {}
+    for a_key, values in bucket.items():
+        disp_attr = next(iter(values.values()))[0] if values else a_key
+        attribute = _attr_get_or_create(env, disp_attr)
         value_ids = []
-        for attr_value in values:
-            attr_val = env['product.attribute.value'].search([
-                ('name', '=ilike', attr_value),
-                ('attribute_id', '=', attribute.id)
-            ], limit=1)
-            if not attr_val:
-                attr_val = env['product.attribute.value'].create({
-                    'name': attr_value,
-                    'attribute_id': attribute.id
-                })
-            attribute_values[attr_name][attr_value] = attr_val
-            value_ids.append(attr_val.id)
-        # Attach the attribute values to the product template via attribute lines.
-        attr_line = template.attribute_line_ids.filtered(lambda l: l.attribute_id.id == attribute.id)
-        if attr_line:
-            attr_line.with_context(skip_variant_auto_create=True).write({
-                'value_ids': [(6, 0, value_ids)]
-            })
+        attr_map[a_key] = {}
+        for v_key, (_disp_a, disp_val) in values.items():
+            av = _attr_value_get_or_create(env, attribute, disp_val)
+            attr_map[a_key][v_key] = av
+            value_ids.append(av.id)
+
+        line = template.attribute_line_ids.filtered(lambda l: l.attribute_id.id == attribute.id)
+        if line:
+            line.with_context(skip_variant_auto_create=True).write({'value_ids': [(6, 0, value_ids)]})
         else:
             template.with_context(skip_variant_auto_create=True).write({
                 'attribute_line_ids': [(0, 0, {
@@ -169,385 +124,314 @@ def setup_template_attributes(env, template, all_variants):
                     'value_ids': [(6, 0, value_ids)]
                 })]
             })
-    return attribute_values
+    return attr_map
 
 
-def create_variant_manual(env, template, product, attribute_values):
-    """
-    Create or update a single product variant based on variant string data.
-    
-    This function:
-      - Parses the variant string into attribute-value pairs.
-      - Determines corresponding attribute value records.
-      - Either updates an existing variant (if a matching combination is found) or creates a new variant.
-      - Sets up pricing and cost fields.
-    
-    :param env: The current Odoo environment.
-    :param template: The product.template record associated with the variant.
-    :param product: A dictionary containing variant data from Excel.
-    :param attribute_values: Mapping of attribute names to attribute value records.
-    :return: The created or updated product.product record, or None.
-    """
-    variant_str = (product.get('variant') or '').strip()
+def _ptav_ids_for_variant(variant):
+    return tuple(sorted(variant.product_template_attribute_value_ids.ids))
+
+
+def _ptav_ids_from_variant_str(env, template, attr_map, variant_str):
     if not variant_str:
-        return None
-
-    # Convert the variant string into a dictionary of attribute-value pairs.
-    variant_attrs = {}
+        return tuple()
+    pairs = {}
     for part in variant_str.split(','):
         if ':' in part:
-            attr, value = part.split(':', 1)
-            variant_attrs[attr.strip().lower()] = value.strip().lower()
+            a, v = part.split(':', 1)
+            pairs[a.strip().lower()] = v.strip().lower()
 
-    tmpl_attr_val_ids = []
-    for attr_name, attr_value in variant_attrs.items():
-        if attr_name not in attribute_values or attr_value not in attribute_values[attr_name]:
-            _logger.warning("Attribute '%s:%s' not found in template.", attr_name, attr_value)
+    ptav_ids = []
+    for a_key, v_key in pairs.items():
+        av = attr_map.get(a_key, {}).get(v_key)
+        if not av:
+            _logger.warning("Attribute pair '%s:%s' not found on template %s.", a_key, v_key, template.name)
             continue
-        attr_val = attribute_values[attr_name][attr_value]
-        attribute = attr_val.attribute_id
-        tmpl_attr_val = get_or_create_template_attribute_value(env, template, attribute, attr_val)
-        tmpl_attr_val_ids.append(tmpl_attr_val.id)
+        ptav = get_or_create_template_attribute_value(env, template, av.attribute_id, av)
+        ptav_ids.append(ptav.id)
+    return tuple(sorted(ptav_ids))
 
-    # Create a unique combination string as a candidate identifier.
-    candidate_combination = ",".join(map(str, sorted(tmpl_attr_val_ids)))
-    existing_variant = None
-    for variant in template.product_variant_ids:
-        variant_combination = ",".join(map(str, sorted(variant.product_template_attribute_value_ids.ids)))
-        if variant_combination == candidate_combination:
-            existing_variant = variant
+
+def create_variant_manual(env, template, product, attr_map):
+    """
+    Create/update one variant (product.product) from 'variant' string.
+    """
+    vstr = (product.get('variant') or '').strip()
+    if not vstr:
+        return None
+
+    ptav_ids = _ptav_ids_from_variant_str(env, template, attr_map, vstr)
+
+    existing = None
+    for v in template.product_variant_ids:
+        if _ptav_ids_for_variant(v) == ptav_ids:
+            existing = v
             break
 
     vals = {
         'product_tmpl_id': template.id,
-        'product_template_attribute_value_ids': [(6, 0, tmpl_attr_val_ids)],
-        'combination_indices': candidate_combination,
+        'product_template_attribute_value_ids': [(6, 0, list(ptav_ids))],
     }
 
-    # Process the sale price if provided.
+    # Variant pricing: Odoo standard keeps price on template; if you use pricelists or custom fields, set here.
     sale_price = product.get('sale price')
-    if not sale_price:
-        raise UserError(_("No sale price provided for  %s") % product.get('name'))
-    if sale_price:
-        try:
-            sale_price_val = float(sale_price)
-        except Exception:
-            sale_price_val = template.list_price
-        vals['lst_price'] = sale_price_val
-        vals['fix_price'] = sale_price_val
-    else:
-        vals['lst_price'] = 0.0
-        vals['fix_price'] = 0.0
+    if sale_price in (None, ''):
+        raise UserError(_("No sale price provided for %s") % (product.get('name') or template.name))
+    # If you have a custom field (e.g., 'x_variant_price'), uncomment and adjust:
+    # try:
+    #     vals['x_variant_price'] = float(sale_price)
+    # except Exception:
+    #     pass
 
-    # Process the cost price.
     cost_price = product.get('cost price')
-    if not cost_price:
-        raise UserError(_("No cost price provided for  %s") % product.get('name'))
-    if cost_price:
-        try:
-            cost_price_val = float(cost_price)
-        except Exception:
-            cost_price_val = template.standard_price
-        vals['standard_price'] = cost_price_val
-
-    if existing_variant:
-        existing_variant.write(vals)
-        _logger.info("Updated variant '%s' for template '%s'.", variant_str, template.name)
-        return existing_variant
-    else:
-        variant = env['product.product'].create(vals)
-        _logger.info("Created variant '%s' for template '%s'.", variant_str, template.name)
-        return variant
-
-
-def update_variant_stock_quantity(env, variant, quantity):
-    """
-    Update the on-hand stock quantity of a variant using the stock change wizard.
-    
-    This function checks:
-      - That the variant is associated with a product template.
-      - The product is consumable (type 'consu').
-      - That the product is not tracked by lot/serial.
-    Then it uses the wizard mechanism to update the quantity.
-    
-    :param env: The current Odoo environment.
-    :param variant: The product.product record (variant) to update.
-    :param quantity: The new stock quantity to set.
-    """
-    tmpl = variant.product_tmpl_id
-    if not tmpl:
-        _logger.warning("Variant '%s' has no associated product template; skipping stock update.", variant.default_code or variant.id)
-        return
-
-    if tmpl.type != 'consu':
-        _logger.info("Product '%s' is not consumable; skipping stock update.", tmpl.name)
-        return
-
-    tracking = tmpl.tracking or 'none'
-    if tracking in ['lot', 'serial']:
-        _logger.info("Product '%s' is tracked by '%s'; skipping stock update.", tmpl.name, tracking)
-        return
-
+    if cost_price in (None, ''):
+        raise UserError(_("No cost price provided for %s") % (product.get('name') or template.name))
     try:
-        wizard = env['stock.change.product.qty'].create({
-            'product_id': variant.id,
-            'product_tmpl_id': tmpl.id,
-            'new_quantity': quantity,
-        })
-        wizard.change_product_qty()
-        _logger.info("Updated stock for variant '%s' to quantity %s.", variant.default_code or variant.id, quantity)
-    except Exception as e:
-        _logger.error("Error updating stock for variant '%s': %s", variant.default_code or variant.id, e)
+        vals['standard_price'] = float(cost_price)
+    except Exception:
+        vals['standard_price'] = template.standard_price
+
+    if existing:
+        existing.write(vals)
+        _logger.info("Updated variant '%s' for template '%s'.", vstr, template.name)
+        return existing
+    v = env['product.product'].create(vals)
+    _logger.info("Created variant '%s' for template '%s'.", vstr, template.name)
+    return v
+
+
+# ---------------------------
+# Stock (Odoo 18 via Quants)
+# ---------------------------
+
+def get_default_internal_location(env, company=None):
+    """Pick an internal stock location to apply inventory (company’s main WH stock if possible)."""
+    domain = [('usage', '=', 'internal')]
+    if company:
+        domain.append(('company_id', 'in', [False, company.id]))
+    # Try main warehouse stock first
+    wh = env['stock.warehouse'].search([('company_id', '=', company.id if company else env.company.id)], limit=1)
+    if wh and wh.lot_stock_id:
+        return wh.lot_stock_id
+    # Fallback: first internal location
+    loc = env['stock.location'].search(domain, limit=1)
+    if not loc:
+        raise UserError(_("No internal stock location found to apply inventory."))
+    return loc
+
+
+def _get_qty_at_location(env, product, location):
+    quants = env['stock.quant'].search([
+        ('product_id', '=', product.id),
+        ('location_id', 'child_of', location.id),
+    ])
+    return sum(quants.mapped('quantity'))
+
+
+def update_variant_stock_quantity(env, variant, quantity, location=None):
+    """
+    Set on-hand quantity at a location using stock.quant.
+    This applies a delta to reach the target quantity.
+    """
+    location = location or get_default_internal_location(env, variant.company_id or env.company)
+    current = _get_qty_at_location(env, variant, location)
+    target = float(quantity or 0.0)
+    delta = target - current
+    if abs(delta) < 1e-6:
+        _logger.info("Stock for '%s' already at %.2f; no change.", variant.display_name, target)
+        return
+    env['stock.quant']._update_available_quantity(variant, location, delta)
+    _logger.info("Adjusted stock for '%s' at %s from %.2f to %.2f (delta %.2f).",
+                 variant.display_name, location.display_name, current, target, delta)
 
 
 def clean_up_unwanted_variants(env, template, wanted_variants):
-    """
-    Remove any auto-generated or duplicate variants that do not match the desired set.
-    
-    This cleanup is only applied if at least one variant remains after removal.
-    
-    :param env: The current Odoo environment.
-    :param template: The product.template record.
-    :param wanted_variants: List of product.product records that should be kept.
-    """
-    existing_variants = template.product_variant_ids
-    wanted_combinations = []
-    for variant in wanted_variants:
-        if variant and hasattr(variant, 'combination_indices'):
-            wanted_combinations.append(variant.combination_indices)
-    variants_to_remove = []
-    for variant in existing_variants:
-        if hasattr(variant, 'combination_indices') and variant.combination_indices not in wanted_combinations:
-            variants_to_remove.append(variant.id)
-    total_variants = len(existing_variants)
-    if total_variants > 1 and (total_variants - len(variants_to_remove)) >= 1:
-        if variants_to_remove:
-            env['product.product'].browse(variants_to_remove).unlink()
-            _logger.info("Removed %s unwanted variants from template '%s' (ID: %s).", len(variants_to_remove), template.name, template.id)
+    wanted = { _ptav_ids_for_variant(v) for v in wanted_variants if v }
+    to_remove = [v.id for v in template.product_variant_ids if _ptav_ids_for_variant(v) not in wanted]
+    total = len(template.product_variant_ids)
+    keep = total - len(to_remove)
+    if total > 1 and keep >= 1 and to_remove:
+        env['product.product'].browse(to_remove).unlink()
+        _logger.info("Removed %s unwanted variants from '%s' (ID %s).", len(to_remove), template.name, template.id)
     else:
-        _logger.info("Skipped variant removal for template '%s' to avoid leaving no variants.", template.name)
+        _logger.info("Skipping variant cleanup for '%s' (nothing extra or would remove all).", template.name)
 
 
 def get_tracking_value(is_tracked, tracked_by):
-    """
-    Determine the product tracking value based on input fields.
-    
-    If tracking is disabled, or if the tracked_by value is empty or unrecognized,
-    it returns 'none'. Otherwise, it returns the lowercased tracked_by value.
-    
-    :param is_tracked: Value indicating if tracking is enabled.
-    :param tracked_by: Field indicating tracking method.
-    :return: 'lot', 'serial', or 'none'.
-    """
     if not is_tracked:
         return 'none'
-    tracked_by_lower = (tracked_by or '').strip().lower()
-    if not tracked_by_lower:
-        return 'none'
-    if tracked_by_lower in ['lot', 'serial']:
-        return tracked_by_lower
-    return 'none'
+    t = (tracked_by or '').strip().lower()
+    return t if t in ('lot', 'serial') else 'none'
 
+
+def _normalize_type(raw):
+    s = (raw or 'consu').strip().lower()
+    if s in ('product', 'storable', 'stockable'):
+        return 'product'
+    if s in ('consu', 'consumable'):
+        return 'consu'
+    if s == 'service':
+        return 'service'
+    return 'consu'
+
+
+# ---------------------------
+# Main import routine
+# ---------------------------
 
 def add_or_update_product_with_variants(env, product_data):
     """
-    Process the list of product data dictionaries from an Excel file.
-    
-    This function groups the data by product template name,
-    updates or creates product templates, handles UoM conversion,
-    disables automatic variant creation, processes attribute lines,
-    creates/updates variants, and performs stock quantity updates.
-    
-    :param env: The current Odoo environment.
-    :param product_data: List of dictionaries containing product data.
+    product_data: list of dict rows
+    Required: name, cost price (and sale price if no variants)
+    Optional: product code, uom, purchase uom, type, is tracked, tracked by, category, stock quantity, supplier, variant
     """
-    templates_and_variants = {}
-    # Group rows by product template name.
-    for product in product_data:
-        name = (product.get('name') or '').strip()
+    groups = {}
+    for row in product_data:
+        name = (row.get('name') or '').strip()
         if name:
-            if name not in templates_and_variants:
-                templates_and_variants[name] = {'template_data': product, 'variants': []}
-            else:
-                if product.get('variant'):
-                    templates_and_variants[name]['variants'].append(product)
+            groups.setdefault(name, {'template_data': row, 'variants': []})
         else:
-            # Variant rows without a template name are assigned to the last defined template.
-            last_template_name = list(templates_and_variants.keys())[-1] if templates_and_variants else None
-            if last_template_name:
-                templates_and_variants[last_template_name]['variants'].append(product)
+            if groups:
+                last = next(reversed(groups))
+                groups[last]['variants'].append(row)
             else:
-                _logger.warning("Variant row encountered before any product template is defined. Skipping row.")
+                _logger.warning("Orphan variant row before any template; skipping.")
+                continue
 
-    # Process each grouped template and its variants.
-    for template_name, data in templates_and_variants.items():
+    for template_name, data in groups.items():
         template_data = data['template_data']
-        product_code = str(template_data.get('product code') or '').strip()
-        variants = data['variants']
-        if template_data.get('variant'):
+        variants = list(data['variants'])
+
+        # Treat template row as a variant row too if it has 'variant'
+        if (template_data.get('variant') or '').strip():
             variants.insert(0, template_data)
-        # product_tmpl = env['product.template'].search([('name', '=ilike', template_name)], limit=1)
-        
-        # 1) If a code was supplied, try to find that exact product.product
+
+        # Try find template
+        product_code = (template_data.get('product code') or '').strip()
         product_tmpl = None
         if product_code:
-            prod = env['product.product'].search([('default_code','=',product_code)], limit=1)
+            prod = env['product.product'].search([('default_code', '=', product_code)], limit=1)
             if prod:
                 product_tmpl = prod.product_tmpl_id
             else:
-                _logger.warning("Product code '%s' not found — will create new template.", product_code)
-        
-        # 2) Fallback: search by name
+                _logger.info("Product code '%s' not found — will resolve by name.", product_code)
         if not product_tmpl:
             product_tmpl = env['product.template'].search([('name', '=ilike', template_name)], limit=1)
-        
-        
-        # Process UoM and product type fields.
+
+        # Normalize fields
         uom_value = (template_data.get('uom') or 'Unit').strip()
         purchase_uom_value = (template_data.get('purchase uom') or '').strip() or uom_value
-        product_type = (template_data.get('type') or 'consu').strip().lower()
+        prod_type = _normalize_type(template_data.get('type'))
         is_tracked = str(template_data.get('is tracked') or '').strip().lower() == 'true'
-        tracked_by = (template_data.get('tracked by') or '').strip().lower()
-        # Determine storability based on product type and tracking.
-        is_storable = True if product_type != 'service' and is_tracked and (tracked_by == '' or tracked_by not in ['lot', 'serial']) \
-                            else str(template_data.get('is storable') or 'false').strip().lower() == 'true'
-        tracking_val = get_tracking_value(is_tracked, template_data.get('tracked by'))
-        lot_valuated = True if tracking_val in ['lot', 'serial'] else False
+        tracked_by_val = (template_data.get('tracked by') or '').strip().lower()
+        tracking_val = get_tracking_value(is_tracked, tracked_by_val)
+
+        # Validate prices
+        cost_cell = template_data.get('cost price')
+        if cost_cell in (None, ''):
+            raise UserError(_("Missing required field ‘cost price’ for product ‘%s’.") % template_name)
+        try:
+            standard_price = float(cost_cell)
+        except ValueError:
+            raise UserError(_("Invalid value in ‘cost price’ for product ‘%s’: ‘%s’ is not a number.")
+                            % (template_name, cost_cell))
 
         vals = {
             'name': template_name,
-            'type': template_data.get('type', 'consu'),
-            'default_code': product_code, 
-            'standard_price': float(template_data.get('cost price', 0)),
+            'type': prod_type,
+            'default_code': product_code or False,
+            'standard_price': standard_price,
             'uom_id': get_or_create_uom(env, uom_value),
             'uom_po_id': get_or_create_uom(env, purchase_uom_value),
-            'sale_ok': template_data.get('is saleable', True),
-            'purchase_ok': template_data.get('is purchasable', True),
+            'sale_ok': bool(template_data.get('is saleable', True)),
+            'purchase_ok': bool(template_data.get('is purchasable', True)),
             'description': (template_data.get('internal notes') or '').strip(),
-            'is_storable': is_storable,
             'tracking': tracking_val,
-            'lot_valuated': lot_valuated,
         }
 
         category_name = (template_data.get('category') or '').strip()
         if category_name:
             vals['categ_id'] = get_or_create_category(env, category_name)
-        
-        # —— cost price —— #
-        cost_cell = template_data.get('cost price')
-        if cost_cell is None or str(cost_cell).strip() == '':
-            raise UserError(_(
-                "Missing required field ‘cost price’ for product ‘%s’."
-            ) % template_name)
-        try:
-            vals['standard_price'] = float(cost_cell)
-        except ValueError:
-            raise UserError(_(
-                "Invalid value in ‘cost price’ for product ‘%s’: ‘%s’ is not a number."
-            ) % (template_name, cost_cell))
 
-        # —— sale price —— #
         if not variants:
             sale_cell = template_data.get('sale price')
-            if sale_cell is None or str(sale_cell).strip() == '':
-                raise UserError(_(
-                    "Missing required field ‘sale price’ for product ‘%s’."
-                ) % template_name)
+            if sale_cell in (None, ''):
+                raise UserError(_("Missing required field ‘sale price’ for product ‘%s’.") % template_name)
             try:
                 vals['list_price'] = float(sale_cell)
             except ValueError:
-                raise UserError(_(
-                    "Invalid value in ‘sale price’ for product ‘%s’: ‘%s’ is not a number."
-                ) % (template_name, sale_cell))
+                raise UserError(_("Invalid value in ‘sale price’ for product ‘%s’: ‘%s’ is not a number.")
+                                % (template_name, sale_cell))
 
-
-        # 3) Create if still not found and no valid code pointed to an existing record
+        # Create/update template
         if not product_tmpl:
             product_tmpl = env['product.template'].create(vals)
             _logger.info("Created product template: %s", template_name)
         else:
-            if product_code and prod:
-                _logger.info("Found existing product via code '%s'; skipping template creation.",product_code)
             if product_tmpl.product_variant_count > 1:
-                vals.pop('list_price', None)
+                vals.pop('list_price', None)  # multi-variant: price via pricelists/variants
             product_tmpl.write(vals)
             _logger.info("Updated product template: %s", template_name)
-        env.cr.commit()  # Commit changes as needed.
 
-        # Reload the updated template record.
         product_tmpl = env['product.template'].browse(product_tmpl.id)
         disable_variant_auto_creation(env, product_tmpl)
-        
-        # Setup attributes from the variant data.
-        all_variant_data = variants.copy()
-        attribute_values = setup_template_attributes(env, product_tmpl, all_variant_data)
-        
+
+        # Attributes from variants
+        attr_map = setup_template_attributes(env, product_tmpl, variants)
+
         created_variants = []
-        # Process each variant row to create or update corresponding product.product records.
-        for variant_data in all_variant_data:
-            if variant_data.get('variant'):
-                variant = create_variant_manual(env, product_tmpl, variant_data, attribute_values)
-                if variant:
-                    created_variants.append(variant)
-                    variant_stock = variant_data.get('stock quantity')
-                    if variant_stock not in (None, ''):
-                        try:
-                            qty_value = float(variant_stock)
-                        except Exception:
-                            qty_value = 0.0
-                        update_variant_stock_quantity(env, variant, qty_value)
-        # If no variants exist, create a single variant.
-        if not variants and len(product_tmpl.product_variant_ids) == 0:
-            variant = env['product.product'].create({'product_tmpl_id': product_tmpl.id})
-            created_variants.append(variant)
-            template_stock = template_data.get('stock quantity')
-            if variant_stock not in (None, ''):
+        for vdata in variants:
+            v = create_variant_manual(env, product_tmpl, vdata, attr_map)
+            if v:
+                created_variants.append(v)
+                v_qty = vdata.get('stock quantity')
+                if v_qty not in (None, ''):
+                    try:
+                        qty_value = float(v_qty)
+                    except Exception:
+                        qty_value = 0.0
+                    update_variant_stock_quantity(env, v, qty_value)
+
+        # Ensure at least one variant exists if no variant specs provided
+        if not variants and not product_tmpl.product_variant_ids:
+            v = env['product.product'].create({'product_tmpl_id': product_tmpl.id})
+            created_variants.append(v)
+            t_qty = template_data.get('stock quantity')
+            if t_qty not in (None, ''):
                 try:
-                    qty_value = float(template_stock)
+                    qty_value = float(t_qty)
                 except Exception:
                     qty_value = 0.0
-                update_variant_stock_quantity(env, variant, qty_value)
+                update_variant_stock_quantity(env, v, qty_value)
             _logger.info("Created single variant for template: %s", template_name)
-        if not variants:
-            template_stock = template_data.get('stock quantity')
-            if template_stock not in (None, ''):
+
+        # Template-level stock on first variant (if provided and there are variants)
+        if not variants and product_tmpl.product_variant_ids:
+            t_qty = template_data.get('stock quantity')
+            if t_qty not in (None, ''):
                 try:
-                    qty_value = float(template_stock)
+                    qty_value = float(t_qty)
                 except Exception:
                     qty_value = 0.0
-                update_variant_stock_quantity(env, product_tmpl.product_variant_ids[0], template_data.get('stock quantity'))
-        
-        # SET SUPPLIER IF EXIST
-        # Only add supplier info if the product is marked purchasable
-        if not template_data.get('is purchasable', True):
-            _logger.info("Product '%s' is not purchasable; skipping supplier info.", template_name)
-        else:
-            # —— Supplier info —— #
-            supplier_name = str(template_data.get('supplier') or '').strip()
+                update_variant_stock_quantity(env, product_tmpl.product_variant_ids[0], qty_value)
+
+        # Supplier info
+        if template_data.get('is purchasable', True):
+            supplier_name = (template_data.get('supplier') or '').strip()
             if supplier_name:
-                # Find an existing partner who is a supplier
                 vendor = env['res.partner'].search([
                     ('name', '=', supplier_name),
                     ('supplier_rank', '>', 0)
                 ], limit=1)
                 if not vendor:
-                    _logger.warning(
-                        "Supplier '%s' not found; skipping purchase info for %s",
-                        supplier_name, template_name
-                    )
+                    _logger.warning("Supplier '%s' not found; skipping purchase info for %s", supplier_name, template_name)
                 else:
-                    # Reuse the UoM you already looked up
                     uom_id = get_or_create_uom(env, uom_value)
-                    cost_cell = template_data.get('cost price')
-                    price = float(cost_cell)
-
-                    # Search on partner_id instead of name
+                    price = standard_price
                     info = env['product.supplierinfo'].search([
                         ('partner_id', '=', vendor.id),
                         ('product_tmpl_id', '=', product_tmpl.id),
                         ('product_uom', '=', uom_id),
                     ], limit=1)
-
                     vals_si = {
                         'partner_id':      vendor.id,
                         'product_tmpl_id': product_tmpl.id,
@@ -557,29 +441,14 @@ def add_or_update_product_with_variants(env, product_data):
                     }
                     if info:
                         info.write(vals_si)
-                        _logger.info(
-                            "Updated supplierinfo for %s from %s",
-                            template_name, supplier_name
-                        )
                     else:
                         env['product.supplierinfo'].create(vals_si)
-                        _logger.info(
-                            "Created supplierinfo for %s with %s",
-                            template_name, supplier_name
-                        )
 
-        # Finally, commit everything
-        env.cr.commit()
-
-
-        product_tmpl = env['product.template'].browse(product_tmpl.id)
-        has_variant_data = any((v.get('variant') or '').strip() for v in all_variant_data)
-        if has_variant_data:
+        # Cleanup extras when real variant data exists
+        if any((r.get('variant') or '').strip() for r in variants) and created_variants:
             clean_up_unwanted_variants(env, product_tmpl, created_variants)
         else:
-            _logger.info("Skipping variant removal for '%s' because no variant data was provided.", template_name)
-        variant_prices = product_tmpl.product_variant_ids.mapped('fix_price')
-        if variant_prices:
-            stored_price = min(variant_prices)
-            product_tmpl.write({'list_price': stored_price})
-            _logger.info("Set template '%s' list_price to minimum variant price: %s", template_name, stored_price)
+            _logger.info("No variant cleanup for '%s' (no variant data).", template_name)
+
+    # Single commit at the end
+    env.cr.commit()
