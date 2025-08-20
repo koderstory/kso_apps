@@ -8,10 +8,22 @@ class StockMoveLine(models.Model):
     width  = fields.Float(string="Width (cm)")
     height = fields.Float(string="Height (cm)")
 
+    x_employee = fields.Many2one(
+        comodel_name='hr.employee',  # The related model
+        string='Responsible',           # Field label in UI
+        required=False,               # Makes the field mandatory
+        ondelete='restrict',          # Behavior if related record is deleted
+        index=True       
+    )
+
     @api.model_create_multi
     def create(self, vals_list):
+        
         lines = super().create(vals_list)
         lines._propagate_dimensions_to_lot()
+        for vals in vals_list:
+            if not vals.get('x_employee'):
+                vals['x_employee'] = self.env.user.partner_id.id
         return lines
 
     def write(self, vals):
@@ -52,3 +64,20 @@ class StockMoveLine(models.Model):
             if line.length or line.width or line.height:
                 # cm³ → m³
                 line.quantity = (line.length * line.width * line.height) / 1_000_000
+
+
+    # -------- Pull from an existing lot --------
+    @api.onchange('lot_id')
+    def _onchange_lot_id_copy_dims(self):
+        """If user picked an existing lot, copy its dimensions to the line
+        but do not overwrite already-entered values."""
+        for line in self:
+            lot = line.lot_id
+            if not lot:
+                continue
+            if not line.length and lot.length:
+                line.length = lot.length
+            if not line.width and lot.width:
+                line.width = lot.width
+            if not line.height and lot.height:
+                line.height = lot.height

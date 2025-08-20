@@ -22,7 +22,7 @@
                         class="oe_highlight"
                         data-hotkey="g"
                         icon="fa-cubes"
-                        invisible="state != 'progress'" />
+                        invisible="state != state not in ('progress', 'to_close')" />
                 </xpath>
 
                 <xpath expr="//button[@name='action_start']" position="replace">

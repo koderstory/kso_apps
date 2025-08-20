@@ -1,0 +1,30 @@
+<odoo>
+  <data>
+    <!-- Wizard form -->
+    <record id="view_mrp_produce_check_wizard_form" model="ir.ui.view">
+      <field name="name">mrp.produce.check.wizard.form</field>
+      <field name="model">mrp.produce.check.wizard</field>
+      <field name="arch" type="xml">
+        <form string="Confirm Production">
+          <group>
+            <field name="produced_qty"/>
+            <field name="consumed_qty"/>
+            <field name="difference"/>
+          </group>
+          <footer>
+            <button string="Back" special="cancel" class="btn-secondary"/>
+            <button string="Confirm" type="object" name="action_confirm" class="btn-primary"/>
+          </footer>
+        </form>
+      </field>
+    </record>
+
+    <!-- Action to open the wizard -->
+    <record id="action_mrp_produce_check_wizard" model="ir.actions.act_window">
+      <field name="name">Confirm Production</field>
+      <field name="res_model">mrp.produce.check.wizard</field>
+      <field name="view_mode">form</field>
+      <field name="target">new</field>
+    </record>
+  </data>
+</odoo>

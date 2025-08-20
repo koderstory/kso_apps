@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Hide Produce Button by State',
+    'name': 'KSO: MRP Customized',
     'version': '1.0.0',
-    'summary': 'Hide the Produce button except when MO is in progress',
+    'summary': 'Customized MRP',
     'category': 'Manufacturing',
-    'author': 'Your Company',
-    'website': 'https://your.company',
+    'author': 'Koderstory',
+    'website': 'https://koderstory.com',
     'license': 'LGPL-3',
     'depends': ['mrp'],
     'data': [
         'views/mrp_hide_produce_all.xml',
+        'views/mrp_wizard_check.xml',
     ],
     'installable': True,
     'application': False,
-    'auto_install': True,
+    'auto_install': False,
 }

@@ -7,9 +7,9 @@
     <field name="arch" type="xml">
       <!-- insert after the lot_id column -->
       <xpath expr="//field[@name='lot_id']" position="after">
-        <field name="lot_length" string="Length (cm)" />
-        <field name="lot_width"  string="Width (cm)"  />
-        <field name="lot_height" string="Height (cm)" />
+        <field name="lot_length" string="Length (cm)" optional="hide" />
+        <field name="lot_width"  string="Width (cm)"  optional="hide"/>
+        <field name="lot_height" string="Height (cm)" optional="hide"/>
       </xpath>
     </field>
   </record>
