@@ -1,103 +1,136 @@
-from odoo import models, fields, api, exceptions
-import itertools
+from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 
 
 class CustomProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        templates = super(CustomProductTemplate, self).create(vals_list)
-        for template in templates:
-            self._generate_default_code(template)
-        return templates
+    # Make the field label show as "SKU" everywhere (forms, lists, etc)
+    default_code = fields.Char(string="SKU")
 
-    def write(self, vals):
-        result = super(CustomProductTemplate, self).write(vals)
+    # --- Manual button on the template form ---
+    def action_generate_sku(self):
         for template in self:
-            # Regenerate default code only if category has changed
-            if 'categ_id' in vals and template.categ_id and template.categ_id.code:
-                self._generate_default_code(template)
-        return result
+            template._ensure_category_code()
+            template._generate_default_code_if_missing()
+            template._generate_variants_codes()
+            try:
+                template.message_post(body="SKU generated for template and variants.")
+            except Exception:
+                pass
+        return True
 
-    def _generate_default_code(self, template):
-        if not template.default_code and template.categ_id and template.categ_id.code:
+    # --- Helpers ---
+    def _ensure_category_code(self):
+        for t in self:
+            if not t.categ_id:
+                raise ValidationError("Please set a Product Category before generating SKU.")
+            # requires a custom 'code' char field on product.category
+            if not getattr(t.categ_id, 'code', False):
+                raise ValidationError("Please set a Category Code on the Product Category before generating SKU.")
+
+    def _generate_default_code_if_missing(self):
+        """Generate template default_code only if it's empty."""
+        for template in self:
+            if template.default_code:
+                continue
             category_code = template.categ_id.code
 
-            # Find existing products with matching category code pattern
-            existing_products = self.search(
-                [('default_code', 'like', f"{category_code}-%")]
-            )
-
-            # Determine the highest number from existing product codes
+            # Find existing with same prefix
+            existing = self.search([('default_code', 'like', f"{category_code}-%")])
             last_number = 0
-            for product in existing_products:
-                parts = product.default_code.split('-')
+            for prod in existing:
+                parts = (prod.default_code or '').split('-')
                 if len(parts) > 1 and parts[1].isdigit():
-                    number = int(parts[1])
-                    last_number = max(last_number, number)
+                    last_number = max(last_number, int(parts[1]))
 
-            # Assign the new default code
             template.default_code = f"{category_code}-{last_number + 1:05d}"
+
+    def _generate_variants_codes(self):
+        """Generate/refresh codes for each variant under this template."""
+        for template in self:
+            for variant in template.product_variant_ids:
+                variant._generate_variant_default_code()
 
 
 class CustomProductProduct(models.Model):
     _inherit = 'product.product'
 
-    default_code = fields.Char(readonly=True)
+    # keep readonly in UI; label as SKU
+    default_code = fields.Char(string="SKU", readonly=True)
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        products = super(CustomProductProduct, self).create(vals_list)
-        for variant in products:
-            self._generate_variant_default_code(variant)
-        return products
-
-    def write(self, vals):
-        result = super(CustomProductProduct, self).write(vals)
+    # --- Manual button on the variant form ---
+    def action_generate_sku(self):
         for variant in self:
-            # Regenerate default code only if category has changed
-            if 'product_tmpl_id' in vals:
-                self._generate_variant_default_code(variant)
-        return result
+            template = variant.product_tmpl_id
+            template._ensure_category_code()
+            template._generate_default_code_if_missing()
+            variant._generate_variant_default_code()
+            try:
+                variant.message_post(body="SKU generated for this variant.")
+            except Exception:
+                pass
+        return True
 
-    def _generate_variant_default_code(self, variant):
-        template = variant.product_tmpl_id
+    # --- Bulk actions (Actions menu on list view) ---
+    def action_batch_generate_sku(self, skip_existing=False, overwrite=False):
+        """
+        Process selected variants.
+        - Only variants with a category (categ_id) are processed; others skipped.
+        - skip_existing=True -> leave variants that already have default_code
+        - overwrite=True     -> clear default_code first then regenerate
+        """
+        eligible = self.filtered(lambda p: p.categ_id)
+        processed = 0
+        for p in eligible:
+            if skip_existing and p.default_code:
+                continue
+            if overwrite:
+                p.default_code = False
 
-        # Generate template default_code if it doesn't exist
-        if not template.default_code:
-            template._generate_default_code(template)
+            tmpl = p.product_tmpl_id
+            tmpl._ensure_category_code()
+            tmpl._generate_default_code_if_missing()
+            p._generate_variant_default_code()
+            processed += 1
 
-        # Generate variant codes based on attribute values
-        attribute_values = variant.product_template_attribute_value_ids
-        if attribute_values:
-            # Group attribute values by attribute
-            attribute_groups = {}
-            for av in attribute_values:
-                attribute_groups.setdefault(av.attribute_id.id, []).append(av.name)
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": "SKU Generation",
+                "message": f"Processed {processed} of {len(self)} selected (only those with Category).",
+                "sticky": False,
+            },
+        }
 
-            # Generate all combinations of attribute values
-            attribute_combinations = list(itertools.product(
-                *[attribute_groups[attr_id] for attr_id in attribute_groups]
-            ))
+    # --- Helper for variants ---
+    def _generate_variant_default_code(self):
+        for variant in self:
+            template = variant.product_tmpl_id
+            base = template.default_code or ''
+            attribute_values = variant.product_template_attribute_value_ids
 
-            # Generate variant codes for each combination
-            for combination in attribute_combinations:
-                short_codes = [''.join(word[:2].upper() for word in value.split()) for value in combination]
-                variant_code = '-'.join(short_codes)
+            if attribute_values:
+                # Build short code from THIS variant's values (in a stable order)
+                ordered = attribute_values.sorted(
+                    key=lambda x: (x.attribute_id.sequence, x.product_attribute_value_id.sequence)
+                )
+                pieces = []
+                for av in ordered:
+                    sc = ''.join(word[:2].upper() for word in (av.name or '').split())
+                    pieces.append(sc)
+                variant_code = '-'.join([p for p in pieces if p])
+                base_default_code = f"{base}-{variant_code}" if variant_code else base
+            else:
+                base_default_code = base
 
-                # Combine with template.default_code
-                base_default_code = f"{template.default_code}-{variant_code}"
+            # Ensure uniqueness; append numeric suffix if needed
+            unique = base_default_code
+            suffix = 1
+            Product = self.sudo()  # safe search
+            while Product.search([('id', '!=', variant.id), ('default_code', '=', unique)], limit=1):
+                unique = f"{base_default_code}-{suffix}"
+                suffix += 1
 
-                # Ensure uniqueness
-                unique_code = base_default_code
-                suffix = 1
-                while self.search([('default_code', '=', unique_code)], limit=1):
-                    unique_code = f"{base_default_code}-{suffix}"
-                    suffix += 1
-
-                variant.default_code = unique_code
-        else:
-            # No attributes: use the template default_code
-            variant.default_code = template.default_code
+            variant.default_code = unique

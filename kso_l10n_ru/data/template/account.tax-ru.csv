@@ -1,0 +1,6 @@
+"id","name","type_tax_use","amount","amount_type","tax_group_id:id","country_id:id"
+"ru_vat_20_sale","20%","sale","20","percent","ru_vat_group_20","base.ru"
+"ru_vat_20_purchase","20%","purchase","20","percent","ru_vat_group_20","base.ru"
+"ru_vat_10_sale","10%","sale","10","percent","ru_vat_group_10","base.ru"
+"ru_vat_10_purchase","10%","purchase","10","percent","ru_vat_group_10","base.ru"
+"ru_vat_0_sale","0%","sale","0","percent","ru_vat_group_0","base.ru"

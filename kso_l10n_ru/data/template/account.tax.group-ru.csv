@@ -1,0 +1,4 @@
+"id","name","country_id:id"
+"ru_vat_group_20","20%","base.ru"
+"ru_vat_group_10","10%","base.ru"
+"ru_vat_group_0","0%","base.ru"

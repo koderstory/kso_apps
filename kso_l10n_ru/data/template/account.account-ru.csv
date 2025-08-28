@@ -1,0 +1,8 @@
+"id","name","code","account_type","reconcile"
+"ru_acc_50_cash","Cash","50","asset_current","False"
+"ru_acc_51_bank","Bank","51","asset_current","False"
+"ru_acc_62_receivable","Accounts Receivable","62","asset_receivable","True"
+"ru_acc_60_payable","Accounts Payable","60","liability_payable","True"
+"ru_acc_90_sales","Sales","90","income","False"
+"ru_acc_19_vat_in","VAT Input","19","asset_current","False"
+"ru_acc_68_vat_out","VAT Output","68","liability_current","False"

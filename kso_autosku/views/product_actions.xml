@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+
+    <!-- Actions ▸ Generate SKU • Skip Existing -->
+    <record id="kso_act_generate_sku_skip_existing" model="ir.actions.server">
+      <field name="name">Generate SKU • Skip Existing</field>
+      <field name="model_id" ref="product.model_product_product"/>
+      <field name="binding_model_id" ref="product.model_product_product"/>
+      <field name="binding_view_types">list</field>
+      <field name="state">code</field>
+      <field name="code">
+        action = records.action_batch_generate_sku(skip_existing=True, overwrite=False)
+      </field>
+    </record>
+
+    <!-- Actions ▸ Generate SKU • Overwrite Existing -->
+    <record id="kso_act_generate_sku_overwrite" model="ir.actions.server">
+      <field name="name">Generate SKU • Overwrite Existing</field>
+      <field name="model_id" ref="product.model_product_product"/>
+      <field name="binding_model_id" ref="product.model_product_product"/>
+      <field name="binding_view_types">list</field>
+      <field name="state">code</field>
+      <field name="code">
+        action = records.action_batch_generate_sku(skip_existing=False, overwrite=True)
+      </field>
+    </record>
+
+  </data>
+</odoo>

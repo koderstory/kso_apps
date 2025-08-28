@@ -11,6 +11,7 @@
     "depends": ["product"],
     'data': [
         'views/product_view.xml',
+        'views/product_actions.xml',
     ],
     'license': "OPL-1",
     'installable': True,
